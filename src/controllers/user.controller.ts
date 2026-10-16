@@ -1,8 +1,17 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { createUser, findUserByEmail } from "../services/user.service.js";
-import type { CreateUserInput, LoginInput } from "../schemas/user.schema.js";
-import bcrypt from "bcryptjs";
-import { server } from "../app.js";
+import {
+  deleteUserById,
+  getUserById,
+  getUsers,
+  registerUser,
+  updateUserById,
+} from "../services/user.service.js";
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+  UserIdParams,
+} from "../schemas/user.schema.js";
+import { forbidden } from "../lib/errors.js";
 
 export async function registerUserHandler(
   request: FastifyRequest<{
@@ -10,43 +19,45 @@ export async function registerUserHandler(
   }>,
   reply: FastifyReply,
 ) {
-  const body = request.body;
-
-  try {
-    const user = await createUser(body);
-
-    return reply.code(201).send(user);
-  } catch (e) {
-    console.log(e);
-    return reply.code(500).send(e);
-  }
+  const user = await registerUser(request.body);
+  return reply.code(201).send(user);
 }
 
-export async function loginHandler(
-  request: FastifyRequest<{ Body: LoginInput }>,
+export async function getUsersHandler(
+  _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const body = request.body;
+  const users = await getUsers();
 
-  const user = await findUserByEmail(body.email);
+  return reply.send(users);
+}
 
-  if (!user) {
-    return reply.code(401).send({
-      message: "Email ou senha inválidos",
-    });
+export async function getUserByIdHandler(
+  request: FastifyRequest<{ Params: UserIdParams }>,
+  reply: FastifyReply,
+) {
+  const user = await getUserById(request.params.id);
+
+  return reply.send(user);
+}
+
+export async function updateUserHandler(
+  request: FastifyRequest<{ Params: UserIdParams; Body: UpdateUserInput }>,
+  reply: FastifyReply,
+) {
+  const user = await updateUserById(request.params.id, request.body);
+
+  return reply.send(user);
+}
+
+export async function deleteUserHandler(
+  request: FastifyRequest<{ Params: UserIdParams }>,
+  reply: FastifyReply,
+) {
+  if (request.user.id === request.params.id) {
+    throw forbidden("Você não pode deletar a si mesmo");
   }
 
-  const correctPassword = await bcrypt.compare(
-    body.password,
-    user.passwordHash,
-  );
-
-  if (correctPassword) {
-    const { passwordHash, ...rest } = user;
-    return { accessToken: server.jwt.sign(rest) };
-  }
-
-  return reply.code(401).send({
-    message: "Email ou senha inválidos",
-  });
+  await deleteUserById(request.params.id);
+  return reply.code(204).send();
 }

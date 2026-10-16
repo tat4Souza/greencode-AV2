@@ -37,19 +37,13 @@ export const createUserResponseSchema = z.object({
   createdAt: z.date(),
 });
 
-export const loginSchema = z.object({
-  email: z.email({
-    error: (issue) =>
-      issue.input === undefined
-        ? "Email é obrigatório"
-        : "Precisa ser um email válido",
-  }),
-  password: z.string(),
+export const userIdParamsSchema = z.object({
+  id: z.uuid({ error: "Id inválido." }),
 });
 
-export const loginResponseSchema = z.object({
-  accessToken: z.string(),
-});
+export const updateUserSchema = createUserSchema.partial();
+
+export type UserIdParams = z.infer<typeof userIdParamsSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;

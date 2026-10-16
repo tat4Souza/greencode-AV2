@@ -1,17 +1,26 @@
 import type { FastifyInstance } from "fastify";
 import {
-  loginHandler,
+  deleteUserHandler,
+  getUserByIdHandler,
+  getUsersHandler,
   registerUserHandler,
+  updateUserHandler,
 } from "../controllers/user.controller.js";
 import {
   createUserResponseSchema,
   createUserSchema,
-  loginResponseSchema,
-  loginSchema,
+  updateUserSchema,
+  userIdParamsSchema,
+  type UserIdParams,
   type CreateUserInput,
+  type UpdateUserInput,
 } from "../schemas/user.schema.js";
+import { requireRole } from "../middlewares/auth.js";
+import { z } from "zod";
 
 async function userRoutes(server: FastifyInstance) {
+  server.addHook("onRequest", requireRole("ADMIN"));
+
   server.post<{ Body: CreateUserInput }>(
     "/",
     {
@@ -22,16 +31,45 @@ async function userRoutes(server: FastifyInstance) {
     },
     registerUserHandler,
   );
+  server.get(
+    "/",
+    {
+      schema: { response: { 200: z.array(createUserResponseSchema) } },
+    },
+    getUsersHandler,
+  );
 
-  server.post(
-    "/login",
+  server.get<{ Params: UserIdParams }>(
+    "/:id",
     {
       schema: {
-        body: loginSchema,
-        response: { 200: loginResponseSchema },
+        params: userIdParamsSchema,
+        response: { 200: createUserResponseSchema },
       },
     },
-    loginHandler,
+    getUserByIdHandler,
+  );
+
+  server.put<{ Params: UserIdParams; Body: UpdateUserInput }>(
+    "/:id",
+    {
+      schema: {
+        params: userIdParamsSchema,
+        body: updateUserSchema,
+        response: { 200: createUserResponseSchema },
+      },
+    },
+    updateUserHandler,
+  );
+
+  server.delete<{ Params: UserIdParams }>(
+    "/:id",
+    {
+      schema: {
+        params: userIdParamsSchema,
+      },
+    },
+    deleteUserHandler,
   );
 }
 

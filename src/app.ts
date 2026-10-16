@@ -6,6 +6,9 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import { auth } from "./middlewares/auth.js";
+import authRoutes from "./routes/auth.routes.js";
+import { Prisma } from "./generated/prisma/client.js";
 
 export const server = Fastify();
 
@@ -18,26 +21,36 @@ server.register(fjwt, {
   secret: jwtSecret,
 });
 
-server.decorate(
-  "auth",
-  async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await request.jwtVerify();
-    } catch (e) {
-      return reply.send(e);
-    }
-  },
-);
-
 server.get("/healthcheck", async function () {
   return { status: "OK" };
+});
+
+server.setErrorHandler((error, _request, reply) => {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2025") {
+      return reply.code(404).send({ message: "Recurso não encontrado" });
+    }
+    if (error.code === "P2002") {
+      const fields = (error.meta?.target as string[] | undefined)?.join(", ");
+      return reply.code(409).send({
+        message: `Valor já cadastrado${fields ? ` (${fields})` : ""}`,
+      });
+    }
+  }
+
+  return reply.send(error);
 });
 
 async function main() {
   server.setValidatorCompiler(validatorCompiler);
   server.setSerializerCompiler(serializerCompiler);
 
-  server.register(userRoutes, { prefix: "api/users" });
+  server.register(authRoutes, { prefix: "api/auth" });
+  server.register(async (authentiicated) => {
+    authentiicated.addHook("onRequest", auth);
+
+    authentiicated.register(userRoutes, { prefix: "api/users" });
+  });
 
   try {
     await server.listen({
