@@ -1,0 +1,22 @@
+node_modules/*
+
+# build
+dist/
+
+# segredos e configuração local
+.env
+.env.*
+!.env.example
+
+
+src/generated/
+
+# sistema e logs
+.DS_Store
+Thumbs.db
+*.log
+
+.agents/
+.claude/
+.windsurf/
+skills-lock.json

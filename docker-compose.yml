@@ -1,0 +1,17 @@
+services:
+  postgres:
+    container_name: greencode-db
+    image: postgres:16
+    environment:
+      POSTGRES_USER: greenUser
+      POSTGRES_PASSWORD: green123
+      POSTGRES_DB: greencode
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres:
