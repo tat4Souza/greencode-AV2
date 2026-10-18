@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" 
+  provider = "postgresql"
 }
 
 enum Role {
@@ -16,14 +16,181 @@ enum Role {
   @@map("papel")
 }
 
+enum TrackingStatus {
+  AGUARDANDO_TRIAGEM
+  EM_TRIAGEM
+  AGUARDANDO_DESMONTE
+  EM_DESMONTE
+  PECAS_REAPROVEITADAS
+  MATERIAL_RECICLAVEL
+  DESCARTE_SEGURO
+  BAIXA_DEFINITIVA
+
+  @@map("status_rastreamento")
+}
+
+enum BatchStatus {
+  RECEBIDO
+  EM_TRIAGEM
+  TRIAGEM_CONCLUIDA
+  ENCAMINHADO
+  FINALIZADO
+
+  @@map("status_lote")
+}
+
+enum EquipmentType {
+  COMPUTADOR_MESA
+  NOTEBOOK
+  MONITOR
+  IMPRESSORA
+  SERVIDOR
+  ROTEADOR
+  CABO_ESTRUTURADO
+  FONTE_ALIMENTACAO
+
+  @@map("tipo_equipamento")
+}
+
+enum PhysicalState {
+  NOVO
+  BOM_ESTADO
+  USADO_LEVE
+  USADO_MODERADO
+  DANIFICADO_LEVE
+  DANIFICADO_GRAVE
+  INSERVIVEL
+
+  @@map("estado_fisico")
+}
+
 model User {
-  id String @id @default(uuid()) @db.Uuid @map("us_cod")
-  username String @map("us_nome")
-  email String @unique @map("us_email")
-  passwordHash String @map("us_senha_hash")
-  role Role @default(OPERADOR) @map("us_papel")
-  createdAt DateTime @default(now()) @map("us_criado_em")
-  updatedAt DateTime @updatedAt @map("us_atualizado_em")
+  id           String   @id @default(uuid()) @map("us_cod") @db.Uuid
+  username     String   @map("us_nome")
+  email        String   @unique @map("us_email")
+  passwordHash String   @map("us_senha_hash")
+  role         Role     @map("us_papel")
+  createdAt    DateTime @default(now()) @map("us_criado_em")
+  updatedAt    DateTime @updatedAt @map("us_atualizado_em")
+  version      Int      @default(0) @map("us_versao_otimista")
+
+  organizations Organization[]
+  batches       Batch[]
+  equipments    Equipment[]
+  movements     Movement[]
 
   @@map("usuario")
+}
+
+model Organization {
+  id                String   @id @default(uuid()) @map("org_cod") @db.Uuid
+  name              String   @map("org_razao_social")
+  cnpj              String   @unique @map("org_cnpj")
+  email             String   @map("org_email")
+  stateRegistration String?  @map("org_insc_estadual")
+  phoneNumber       String   @map("org_telefone")
+  cep               String   @map("org_cep")
+  publicPlace       String   @map("org_logradouro")
+  number            String   @map("org_numero")
+  complement        String?  @map("org_complemento")
+  neighbourhood     String   @map("org_bairro")
+  city              String   @map("org_cidade")
+  uf                String   @map("org_estado") @db.Char(2)
+  createdById       String   @map("org_criado_por") @db.Uuid
+  createdAt         DateTime @default(now()) @map("org_criado_em")
+  updatedAt         DateTime @updatedAt @map("org_atualizado_em")
+  version           Int      @default(0) @map("org_versao_otimista")
+
+  createdBy User      @relation(fields: [createdById], references: [id])
+  contract  Contract?
+  batches   Batch[]
+
+  @@index([createdById])
+  @@map("organizacao")
+}
+
+model Contract {
+  id           String   @id @default(uuid()) @map("cont_cod") @db.Uuid
+  orgId        String   @unique @map("cont_org_cod") @db.Uuid
+  signedAt     DateTime @default(now()) @map("cont_data_assinatura")
+  expiresAt    DateTime @map("cont_data_vencimento")
+  clauses      Json     @map("cont_clausulas")
+  monthlyValue Decimal  @map("cont_valor_mensal") @db.Decimal(12, 2)
+  autoRenewal  Boolean  @default(false) @map("cont_renovacao_automatica")
+  version      Int      @default(0) @map("cont_versao_otimista")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
+
+  @@map("contrato")
+}
+
+model Batch {
+  id          String      @id @default(uuid()) @map("lote_cod") @db.Uuid
+  orgId       String      @map("lote_org_cod") @db.Uuid
+  enteredAt   DateTime    @default(now()) @map("lote_data_entrada")
+  invoice     String      @map("lote_nota_fiscal")
+  carrier     String      @map("lote_transportadora")
+  status      BatchStatus @default(RECEBIDO) @map("lote_status")
+  obs         String?     @map("lote_observacoes")
+  createdById String      @map("lote_criado_por") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("lote_criado_em")
+  updatedAt   DateTime    @updatedAt @map("lote_atualizado_em")
+  version     Int         @default(0) @map("lote_versao_otimista")
+
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
+  createdBy  User         @relation(fields: [createdById], references: [id])
+  equipments Equipment[]
+
+  @@index([orgId])
+  @@index([createdById])
+  @@map("lote")
+}
+
+model Equipment {
+  id                String         @id @default(uuid()) @map("equi_cod") @db.Uuid
+  batchId           String         @map("equi_lote_cod") @db.Uuid
+  barCode           String         @unique @map("equi_codigo_barras")
+  type              EquipmentType  @map("equi_tipo")
+  brand             String         @map("equi_marca")
+  model             String         @map("equi_modelo")
+  manufacturingYear Int            @map("equi_ano_fabricacao")
+  physicalState     PhysicalState  @map("equi_estado_fisico")
+  weightKG          Decimal        @map("equi_peso") @db.Decimal(10, 3)
+  batchPosition     Int            @map("equi_posicao_lote")
+  status            TrackingStatus @default(AGUARDANDO_TRIAGEM) @map("equi_status")
+  createdById       String         @map("equi_criado_por") @db.Uuid
+  createdAt         DateTime       @default(now()) @map("equi_criado_em")
+  updatedAt         DateTime       @updatedAt @map("equi_atualizado_em")
+  version           Int            @default(0) @map("equi_versao_otimista")
+
+  createdBy User       @relation(fields: [createdById], references: [id])
+  batch     Batch      @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  movements Movement[]
+
+  @@unique([batchId, batchPosition])
+  @@index([createdById])
+  @@index([batchId])
+  @@map("equipamento")
+}
+
+model Movement {
+  id                String          @id @default(uuid()) @map("mov_cod") @db.Uuid
+  equipmentId       String          @map("mov_equi_cod") @db.Uuid
+  origin            String          @map("mov_origem")
+  destination       String          @map("mov_destino")
+  fromStatus        TrackingStatus? @map("mov_status_anterior")
+  toStatus          TrackingStatus  @map("mov_status_novo")
+  fromPhysicalState PhysicalState?  @map("mov_estado_fisico_anterior")
+  toPhysicalState   PhysicalState?  @map("mov_estado_fisico_novo")
+  justification     String?         @map("mov_justificativa")
+  performedById     String          @map("mov_realizado_por") @db.Uuid
+  performedAt       DateTime        @default(now()) @map("mov_realizado_em")
+  obs               String?         @map("mov_observacao")
+
+  performedBy User      @relation(fields: [performedById], references: [id])
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+
+  @@index([equipmentId, performedAt])
+  @@index([performedById])
+  @@map("movimentacao")
 }
