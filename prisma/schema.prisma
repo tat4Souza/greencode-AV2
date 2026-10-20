@@ -69,7 +69,8 @@ model User {
   username     String   @map("us_nome")
   email        String   @unique @map("us_email")
   passwordHash String   @map("us_senha_hash")
-  role         Role     @map("us_papel")
+  role         Role     @default(AUDITOR) @map("us_papel")
+  createdById  String?   @map("us_criado_por") @db.Uuid
   createdAt    DateTime @default(now()) @map("us_criado_em")
   updatedAt    DateTime @updatedAt @map("us_atualizado_em")
   version      Int      @default(0) @map("us_versao_otimista")
@@ -78,6 +79,9 @@ model User {
   batches       Batch[]
   equipments    Equipment[]
   movements     Movement[]
+
+  createdBy     User?   @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers  User[]  @relation("UserCreatedBy")
 
   @@map("usuario")
 }

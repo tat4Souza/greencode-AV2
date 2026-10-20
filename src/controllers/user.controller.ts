@@ -9,9 +9,9 @@ import {
 import type {
   CreateUserInput,
   UpdateUserInput,
-  UserIdParams,
 } from "../schemas/user.schema.js";
 import { forbidden } from "../lib/errors.js";
+import type { IdParamsSchema } from "../schemas/common.schema.js";
 
 export async function registerUserHandler(
   request: FastifyRequest<{
@@ -19,7 +19,7 @@ export async function registerUserHandler(
   }>,
   reply: FastifyReply,
 ) {
-  const user = await registerUser(request.body);
+  const user = await registerUser(request.body, request.user.id);
   return reply.code(201).send(user);
 }
 
@@ -33,7 +33,7 @@ export async function getUsersHandler(
 }
 
 export async function getUserByIdHandler(
-  request: FastifyRequest<{ Params: UserIdParams }>,
+  request: FastifyRequest<{ Params: IdParamsSchema }>,
   reply: FastifyReply,
 ) {
   const user = await getUserById(request.params.id);
@@ -42,7 +42,7 @@ export async function getUserByIdHandler(
 }
 
 export async function updateUserHandler(
-  request: FastifyRequest<{ Params: UserIdParams; Body: UpdateUserInput }>,
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: UpdateUserInput }>,
   reply: FastifyReply,
 ) {
   const user = await updateUserById(request.params.id, request.body);
@@ -51,7 +51,7 @@ export async function updateUserHandler(
 }
 
 export async function deleteUserHandler(
-  request: FastifyRequest<{ Params: UserIdParams }>,
+  request: FastifyRequest<{ Params: IdParamsSchema }>,
   reply: FastifyReply,
 ) {
   if (request.user.id === request.params.id) {

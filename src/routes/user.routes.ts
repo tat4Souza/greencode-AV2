@@ -7,16 +7,18 @@ import {
   updateUserHandler,
 } from "../controllers/user.controller.js";
 import {
-  createUserResponseSchema,
   createUserSchema,
   updateUserSchema,
-  userIdParamsSchema,
-  type UserIdParams,
   type CreateUserInput,
   type UpdateUserInput,
+  userResponse,
 } from "../schemas/user.schema.js";
 import { requireRole } from "../middlewares/auth.js";
 import { z } from "zod";
+import {
+  idParamsSchema,
+  type IdParamsSchema,
+} from "../schemas/common.schema.js";
 
 async function userRoutes(server: FastifyInstance) {
   server.addHook("onRequest", requireRole("ADMIN"));
@@ -26,7 +28,7 @@ async function userRoutes(server: FastifyInstance) {
     {
       schema: {
         body: createUserSchema,
-        response: { 201: createUserResponseSchema },
+        response: { 201: userResponse },
       },
     },
     registerUserHandler,
@@ -34,39 +36,39 @@ async function userRoutes(server: FastifyInstance) {
   server.get(
     "/",
     {
-      schema: { response: { 200: z.array(createUserResponseSchema) } },
+      schema: { response: { 200: z.array(userResponse) } },
     },
     getUsersHandler,
   );
 
-  server.get<{ Params: UserIdParams }>(
+  server.get<{ Params: IdParamsSchema }>(
     "/:id",
     {
       schema: {
-        params: userIdParamsSchema,
-        response: { 200: createUserResponseSchema },
+        params: idParamsSchema,
+        response: { 200: userResponse },
       },
     },
     getUserByIdHandler,
   );
 
-  server.put<{ Params: UserIdParams; Body: UpdateUserInput }>(
+  server.put<{ Params: IdParamsSchema; Body: UpdateUserInput }>(
     "/:id",
     {
       schema: {
-        params: userIdParamsSchema,
+        params: idParamsSchema,
         body: updateUserSchema,
-        response: { 200: createUserResponseSchema },
+        response: { 200: userResponse },
       },
     },
     updateUserHandler,
   );
 
-  server.delete<{ Params: UserIdParams }>(
+  server.delete<{ Params: IdParamsSchema }>(
     "/:id",
     {
       schema: {
-        params: userIdParamsSchema,
+        params: idParamsSchema,
       },
     },
     deleteUserHandler,

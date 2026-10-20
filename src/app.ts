@@ -9,6 +9,7 @@ import {
 import { auth } from "./middlewares/auth.js";
 import authRoutes from "./routes/auth.routes.js";
 import { Prisma } from "./generated/prisma/client.js";
+import { organizationRoutes } from "./routes/organization.routes.js";
 
 export const server = Fastify();
 
@@ -50,6 +51,9 @@ async function main() {
     authentiicated.addHook("onRequest", auth);
 
     authentiicated.register(userRoutes, { prefix: "api/users" });
+    authentiicated.register(organizationRoutes, {
+      prefix: "api/organizations",
+    });
   });
 
   try {
@@ -57,7 +61,7 @@ async function main() {
       port: Number(process.env.PORT) || 3000,
       host: "0.0.0.0",
     });
-    console.log(`Server ready at http://localhost:3000`);
+    console.log(`Server pronto em http://localhost:3000`);
   } catch (e) {
     console.error(e);
     process.exit(1);

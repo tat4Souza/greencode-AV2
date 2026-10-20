@@ -31,19 +31,19 @@ export const createUserSchema = z.object({
   }),
 });
 
-export const createUserResponseSchema = z.object({
+export const userResponse = z.object({
   id: z.uuid(),
   ...userCore,
+  createdBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
   createdAt: z.date(),
+  updatedAt: z.date(),
+  version: z.number(),
 });
 
-export const userIdParamsSchema = z.object({
-  id: z.uuid({ error: "Id inválido." }),
-});
+export const updateUserSchema = createUserSchema
+  .partial()
+  .extend({ version: z.number().int().min(0) });
 
-export const updateUserSchema = createUserSchema.partial();
-
-export type UserIdParams = z.infer<typeof userIdParamsSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;

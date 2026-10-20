@@ -18,6 +18,8 @@ export const forbidden = (message: string) => createError(message, 403);
 
 export const notAuth = (message: string) => createError(message, 401);
 
+export const badRequest = (message: string) => createError(message, 400);
+
 export function isPrismaError(e: unknown, code: string) {
   return e instanceof Prisma.PrismaClientKnownRequestError && e.code === code;
 }

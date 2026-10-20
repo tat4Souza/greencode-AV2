@@ -1,5 +1,9 @@
-import type { Role } from "../generated/prisma/enums.js";
+import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+} from "../schemas/user.schema.js";
 
 const publicUserSelect = {
   id: true,
@@ -8,14 +12,16 @@ const publicUserSelect = {
   role: true,
   createdAt: true,
   updatedAt: true,
-} as const;
+  version: true,
+  createdBy: { select: { id: true, username: true } },
+} satisfies Prisma.UserSelect;
 
-export function createUser(data: {
-  username: string;
-  email: string;
-  role?: Role;
-  passwordHash: string;
-}) {
+export function createUser(
+  data: Omit<CreateUserInput, "password"> & {
+    passwordHash: string;
+    createdById?: string;
+  },
+) {
   return prisma.user.create({
     data,
     select: publicUserSelect,
@@ -43,16 +49,18 @@ export function findUserById(id: string) {
   });
 }
 
-export function updateUser(
+export async function updateUser(
   id: string,
-  data: {
-    username?: string;
-    email?: string;
-    role?: Role;
+  version: number,
+  data: Omit<UpdateUserInput, "password" | "version"> & {
     passwordHash?: string;
   },
 ) {
-  return prisma.user.update({ where: { id }, data, select: publicUserSelect });
+  const result = await prisma.user.updateMany({
+    where: { id, version },
+    data: { ...data, version: { increment: 1 } },
+  });
+  return result.count;
 }
 
 export function deleteUser(id: string) {
