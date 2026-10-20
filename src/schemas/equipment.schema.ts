@@ -34,4 +34,20 @@ export const equipmentResponseSchema = z.object({
   createdBy: z.object({ id: z.uuid(), username: z.string() }),
 });
 
+export const updateEquipmentSchema = createEquipmentSchema
+  .omit({ physicalState: true })
+  .partial()
+  .extend({ version: z.number().int().min(0) });
+
+export const listEquipmentsQuerySchema = z.object({
+  batchId: z.uuid().optional(),
+  status: z.enum(TrackingStatus).optional(),
+  type: z.enum(EquipmentType).optional(),
+});
+
+export const barcodeParamsSchema = z.object({ code: z.string().min(1) });
+
+export type BarcodeParams = z.infer<typeof barcodeParamsSchema>;
+export type ListEquipmentsQuery = z.infer<typeof listEquipmentsQuerySchema>;
+export type UpdateEquipmentInput = z.infer<typeof updateEquipmentSchema>;
 export type CreateEquipmentInput = z.infer<typeof createEquipmentSchema>;
