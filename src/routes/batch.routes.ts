@@ -31,7 +31,7 @@ import {
 } from "../schemas/equipment.schema.js";
 
 async function batchRoutes(server: FastifyInstance) {
-  //   Criar lote com a lista de equipamentos no body | Papeis: ADMIN, GESTOR -> Aqui é para usar $transaction
+  //   Criar lote com a lista de equipamentos no body | Papeis: ADMIN, GESTOR
   server.post<{ Body: CreateBatchInput }>(
     "/",
     {
