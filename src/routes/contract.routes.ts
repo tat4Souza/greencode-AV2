@@ -16,7 +16,7 @@ import {
   updateContractHandler,
 } from "../controllers/contract.controller.js";
 
-export async function contractRoutes(server: FastifyInstance) {
+async function contractRoutes(server: FastifyInstance) {
   server.post<{ Params: IdParamsSchema; Body: CreateContractInput }>(
     "/",
     {
@@ -52,3 +52,5 @@ export async function contractRoutes(server: FastifyInstance) {
     updateContractHandler,
   );
 }
+
+export default contractRoutes;

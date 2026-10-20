@@ -33,6 +33,7 @@ async function userRoutes(server: FastifyInstance) {
     },
     registerUserHandler,
   );
+
   server.get(
     "/",
     {

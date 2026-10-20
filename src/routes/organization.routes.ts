@@ -17,10 +17,10 @@ import {
   type IdParamsSchema,
 } from "../schemas/common.schema.js";
 import { z } from "zod";
-import { contractRoutes } from "./contract.routes.js";
+import contractRoutes from "./contract.routes.js";
 import { requireRole } from "../middlewares/auth.js";
 
-export async function organizationRoutes(server: FastifyInstance) {
+async function organizationRoutes(server: FastifyInstance) {
   server.addHook("onRequest", requireRole("OPERADOR"));
 
   server.post<{ Body: CreateOrgInput }>(
@@ -68,3 +68,5 @@ export async function organizationRoutes(server: FastifyInstance) {
 
   // falta um delete com o soft delete
 }
+
+export default organizationRoutes;

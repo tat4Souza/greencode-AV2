@@ -1,15 +1,20 @@
 import "dotenv/config";
 import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import fjwt from "@fastify/jwt";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import userRoutes from "./routes/user.routes.js";
 import {
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
 import { auth } from "./middlewares/auth.js";
 import authRoutes from "./routes/auth.routes.js";
 import { Prisma } from "./generated/prisma/client.js";
-import { organizationRoutes } from "./routes/organization.routes.js";
+import organizationRoutes from "./routes/organization.routes.js";
+import batchRoutes from "./routes/batch.routes.js";
+import equipmentsRoutes from "./routes/equipment.routes.js";
 
 export const server = Fastify();
 
@@ -46,6 +51,20 @@ async function main() {
   server.setValidatorCompiler(validatorCompiler);
   server.setSerializerCompiler(serializerCompiler);
 
+  await server.register(swagger, {
+    openapi: {
+      info: { title: "Greencode API", version: "1.0.0" },
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+        },
+      },
+    },
+    transform: jsonSchemaTransform,
+  });
+
+  await server.register(swaggerUi, { routePrefix: "/docs" });
+
   server.register(authRoutes, { prefix: "api/auth" });
   server.register(async (authentiicated) => {
     authentiicated.addHook("onRequest", auth);
@@ -54,6 +73,8 @@ async function main() {
     authentiicated.register(organizationRoutes, {
       prefix: "api/organizations",
     });
+    authentiicated.register(batchRoutes, { prefix: "api/batches" });
+    authentiicated.register(equipmentsRoutes, { prefix: "api/equipments" });
   });
 
   try {
