@@ -9,6 +9,7 @@ import {
   type UpdateEquipmentInput,
 } from "../schemas/equipment.schema.js";
 import {
+  changeEquipmentStateHandler,
   getAllEquipmentsHandler,
   getEquipmentByBarcodeHandler,
   getEquipmentByIdHandler,
@@ -19,9 +20,16 @@ import {
   type IdParamsSchema,
 } from "../schemas/common.schema.js";
 import { z } from "zod";
+import { requireRole } from "../middlewares/auth.js";
+import {
+  changeEquipmentStateSchema,
+  type ChangeEquipmentStateInput,
+} from "../schemas/movements.schema.js";
+import movementRoutes from "./movement.routes.js";
 
 async function equipmentsRoutes(server: FastifyInstance) {
-  // Listar todos os equipamentos cadastrados | Filtros: batchId, status, type | Papeis: TODOS
+  const canWrite = { onRequest: [requireRole("ADMIN", "GESTOR")] };
+
   server.get<{ Querystring: ListEquipmentsQuery }>(
     "/",
     {
@@ -32,8 +40,7 @@ async function equipmentsRoutes(server: FastifyInstance) {
     },
     getAllEquipmentsHandler,
   );
-  //
-  // Buscar um equipamento por id | Papeis: TODOS
+
   server.get<{ Params: IdParamsSchema }>(
     "/:id",
     {
@@ -44,8 +51,7 @@ async function equipmentsRoutes(server: FastifyInstance) {
     },
     getEquipmentByIdHandler,
   );
-  //
-  // Busca pelo código de barras interno | Papeis: TODOS
+
   server.get<{ Params: BarcodeParams }>(
     "/barcode/:code",
     {
@@ -56,11 +62,11 @@ async function equipmentsRoutes(server: FastifyInstance) {
     },
     getEquipmentByBarcodeHandler,
   );
-  //
-  // Edita os dados de um equipamento | Papeis: ADMIN, GESTOR
+
   server.put<{ Params: IdParamsSchema; Body: UpdateEquipmentInput }>(
     "/:id",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: updateEquipmentSchema,
@@ -69,6 +75,22 @@ async function equipmentsRoutes(server: FastifyInstance) {
     },
     updateEquipmentByIdHandler,
   );
+
+  server.patch<{ Params: IdParamsSchema; Body: ChangeEquipmentStateInput }>(
+    "/:id/status",
+    {
+      ...canWrite,
+      onRequest: [requireRole("ADMIN", "GESTOR")],
+      schema: {
+        params: idParamsSchema,
+        body: changeEquipmentStateSchema,
+        response: { 200: equipmentResponseSchema },
+      },
+    },
+    changeEquipmentStateHandler,
+  );
+
+  server.register(movementRoutes, { prefix: "/:id/movements" });
 }
 
 export default equipmentsRoutes;

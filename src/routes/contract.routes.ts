@@ -15,11 +15,15 @@ import {
   registerContractHandler,
   updateContractHandler,
 } from "../controllers/contract.controller.js";
+import { requireRole } from "../middlewares/auth.js";
 
 async function contractRoutes(server: FastifyInstance) {
+  const canWrite = { onRequest: [requireRole("ADMIN", "OPERADOR")] };
+
   server.post<{ Params: IdParamsSchema; Body: CreateContractInput }>(
     "/",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: contractSchema,
@@ -43,6 +47,7 @@ async function contractRoutes(server: FastifyInstance) {
   server.put<{ Params: IdParamsSchema; Body: UpdateContractInput }>(
     "/",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: updateContractSchema,

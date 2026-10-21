@@ -21,11 +21,12 @@ import contractRoutes from "./contract.routes.js";
 import { requireRole } from "../middlewares/auth.js";
 
 async function organizationRoutes(server: FastifyInstance) {
-  server.addHook("onRequest", requireRole("OPERADOR"));
+  const canWrite = { onRequest: [requireRole("ADMIN", "OPERADOR")] };
 
   server.post<{ Body: CreateOrgInput }>(
     "/",
     {
+      ...canWrite,
       schema: {
         body: createOrgSchema,
         response: { 201: orgResponseSchema },
@@ -55,6 +56,7 @@ async function organizationRoutes(server: FastifyInstance) {
   server.put<{ Params: IdParamsSchema; Body: UpdateOrgInput }>(
     "/:id",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: updateOrgSchema,

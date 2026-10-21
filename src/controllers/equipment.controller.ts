@@ -7,12 +7,14 @@ import type {
 } from "../schemas/equipment.schema.js";
 import type { IdParamsSchema } from "../schemas/common.schema.js";
 import {
+  changeEquipmentState,
   getAllEquipments,
   getEquipmentByBarcode,
   getEquipmentById,
   registerEquipment,
   updateEquipamentById,
 } from "../services/equipment.service.js";
+import type { ChangeEquipmentStateInput } from "../schemas/movements.schema.js";
 
 export async function registerEquipmentHandler(
   request: FastifyRequest<{
@@ -66,5 +68,20 @@ export async function updateEquipmentByIdHandler(
   reply: FastifyReply,
 ) {
   const equipment = await updateEquipamentById(request.params.id, request.body);
+  return reply.send(equipment);
+}
+
+export async function changeEquipmentStateHandler(
+  request: FastifyRequest<{
+    Params: IdParamsSchema;
+    Body: ChangeEquipmentStateInput;
+  }>,
+  reply: FastifyReply,
+) {
+  const equipment = await changeEquipmentState(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
   return reply.send(equipment);
 }

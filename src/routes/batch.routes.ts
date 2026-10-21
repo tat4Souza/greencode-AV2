@@ -29,12 +29,15 @@ import {
   equipmentResponseSchema,
   type CreateEquipmentInput,
 } from "../schemas/equipment.schema.js";
+import { requireRole } from "../middlewares/auth.js";
 
 async function batchRoutes(server: FastifyInstance) {
-  //   Criar lote com a lista de equipamentos no body | Papeis: ADMIN, GESTOR
+  const canWrite = { onRequest: [requireRole("ADMIN", "GESTOR")] };
+
   server.post<{ Body: CreateBatchInput }>(
     "/",
     {
+      ...canWrite,
       schema: {
         body: createBatchSchema,
         response: { 201: batchResponseSchema },
@@ -42,8 +45,7 @@ async function batchRoutes(server: FastifyInstance) {
     },
     registerBatchHandler,
   );
-  //
-  //   Lista todos os lotes cadastrados | Filtros: orgId e status | Papeis: TODOS
+
   server.get<{ Querystring: ListBatchesQuery }>(
     "/",
     {
@@ -54,8 +56,7 @@ async function batchRoutes(server: FastifyInstance) {
     },
     getAllBatchesHandler,
   );
-  //
-  //   Devolve o lote com os equipamentos e o peso total calculado pela função | Papeis: TODOS
+
   server.get<{ Params: IdParamsSchema }>(
     "/:id",
     {
@@ -66,11 +67,11 @@ async function batchRoutes(server: FastifyInstance) {
     },
     getBatchByIdHandler,
   );
-  //
-  //   Edita as informações do próprio lote (não as do equipamento), com version | Papeis: ADMIN, GESTOR
+
   server.put<{ Params: IdParamsSchema; Body: UpdateBatchInput }>(
     "/:id",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: updateBatchSchema,
@@ -79,11 +80,11 @@ async function batchRoutes(server: FastifyInstance) {
     },
     updateBatchByIdHandler,
   );
-  //
-  //   Muda o status, com version | Papeis: ADMIN, GESTOR
+
   server.patch<{ Params: IdParamsSchema; Body: UpdateBatchStatusInput }>(
     "/:id/status",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: updateBatchStatusSchema,
@@ -92,11 +93,11 @@ async function batchRoutes(server: FastifyInstance) {
     },
     updateBatchByStatusHandler,
   );
-  //
-  //   ROTA DO EQUIPAMENTO
+
   server.post<{ Params: IdParamsSchema; Body: CreateEquipmentInput }>(
     "/:id/equipments",
     {
+      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: createEquipmentSchema,
