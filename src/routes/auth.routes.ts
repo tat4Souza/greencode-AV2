@@ -1,10 +1,20 @@
 import type { FastifyInstance } from "fastify";
-import { loginResponseSchema, loginSchema } from "../schemas/auth.schema.js";
-import { loginHandler } from "../controllers/auth.controller.js";
+import {
+  changePasswordSchema,
+  loginResponseSchema,
+  loginSchema,
+  type ChangePasswordInput,
+} from "../schemas/auth.schema.js";
+import {
+  changePasswordHandler,
+  loginHandler,
+  logoutHandler,
+} from "../controllers/auth.controller.js";
+import { auth } from "../middlewares/auth.js";
 
 async function authRoutes(server: FastifyInstance) {
   server.post(
-    "/",
+    "/login",
     {
       schema: {
         body: loginSchema,
@@ -12,6 +22,14 @@ async function authRoutes(server: FastifyInstance) {
       },
     },
     loginHandler,
+  );
+
+  server.post("/logout", { onRequest: [auth] }, logoutHandler);
+
+  server.patch<{ Body: ChangePasswordInput }>(
+    "/password",
+    { onRequest: [auth], schema: { body: changePasswordSchema } },
+    changePasswordHandler,
   );
 }
 

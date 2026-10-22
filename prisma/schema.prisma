@@ -73,8 +73,9 @@ model User {
   createdById  String?   @map("us_criado_por") @db.Uuid
   createdAt    DateTime @default(now()) @map("us_criado_em")
   updatedAt    DateTime @updatedAt @map("us_atualizado_em")
-  active Boolean @default(true) @map("us_ativo")
+  active       Boolean  @default(true) @map("us_ativo")
   version      Int      @default(0) @map("us_versao_otimista")
+  tokenVersion Int      @default(0) @map("us_versao_token")
 
   organizations Organization[]
   batches       Batch[]

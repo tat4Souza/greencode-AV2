@@ -1,6 +1,13 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { LoginInput } from "../schemas/auth.schema.js";
-import { validateCredentials } from "../services/auth.service.js";
+import type {
+  ChangePasswordInput,
+  LoginInput,
+} from "../schemas/auth.schema.js";
+import {
+  changePassword,
+  logout,
+  validateCredentials,
+} from "../services/auth.service.js";
 
 export async function loginHandler(
   request: FastifyRequest<{ Body: LoginInput }>,
@@ -11,9 +18,29 @@ export async function loginHandler(
   const user = await validateCredentials(email, password);
 
   const accessToken = await reply.jwtSign(
-    { id: user.id, role: user.role },
+    { id: user.id, role: user.role, tv: user.tokenVersion },
     { expiresIn: "1h" },
   );
 
   return reply.send({ accessToken });
+}
+
+export async function logoutHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  await logout(request.user.id);
+  return reply.code(204).send();
+}
+
+export async function changePasswordHandler(
+  request: FastifyRequest<{ Body: ChangePasswordInput }>,
+  reply: FastifyReply,
+) {
+  await changePassword(
+    request.user.id,
+    request.body.currentPassword,
+    request.body.newPassword,
+  );
+  return reply.code(204).send();
 }

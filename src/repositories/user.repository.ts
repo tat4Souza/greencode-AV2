@@ -81,3 +81,30 @@ export async function deactivateUser(id: string, version: number) {
 export function countActiveAdmins() {
   return prisma.user.count({ where: { role: "ADMIN", active: true } });
 }
+
+export function findUserAuthState(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+    select: { active: true, tokenVersion: true },
+  });
+}
+
+export function findUserWithPasswordById(id: string) {
+  return prisma.user.findUnique({ where: { id } });
+}
+
+export function bumpTokenVersion(id: string) {
+  return prisma.user.update({
+    where: { id },
+    data: { tokenVersion: { increment: 1 } },
+    select: { id: true },
+  });
+}
+
+export function updateUserPassword(id: string, passwordHash: string) {
+  return prisma.user.update({
+    where: { id },
+    data: { passwordHash, tokenVersion: { increment: 1 } },
+    select: { id: true },
+  });
+}
