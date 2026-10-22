@@ -8,6 +8,8 @@ import {
 import { assertValidEnteredAt, findDuplicates } from "../lib/validators.js";
 import {
   createBatch,
+  deactivateBatch,
+  deleteBatch,
   findAllBatches,
   findBatchById,
   findExistingBarCodes,
@@ -133,4 +135,22 @@ export async function updateBatchByStatus(
     throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados.");
 
   return getBatchById(id);
+}
+
+export async function deactivateBatchById(id: string, version: number) {
+  const batch = await findBatchById(id);
+  if (!batch) throw notFound("Lote");
+
+  const count = await deactivateBatch(id, version);
+  if (count === 0)
+    throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados");
+}
+
+export async function deleteBatchById(id: string) {
+  try {
+    await deleteBatch(id);
+  } catch (e) {
+    if (isPrismaError(e, "P2025")) throw notFound("Lote");
+    throw e;
+  }
 }

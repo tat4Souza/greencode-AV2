@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import {
+  deactivateBatchHandler,
+  deleteBatchHandler,
   getAllBatchesHandler,
   getBatchByIdHandler,
   registerBatchHandler,
@@ -20,7 +22,9 @@ import {
 } from "../schemas/batch.schema.js";
 import {
   idParamsSchema,
+  versionBodySchema,
   type IdParamsSchema,
+  type VersionBody,
 } from "../schemas/common.schema.js";
 import { z } from "zod";
 import { registerEquipmentHandler } from "../controllers/equipment.controller.js";
@@ -105,6 +109,23 @@ async function batchRoutes(server: FastifyInstance) {
       },
     },
     registerEquipmentHandler,
+  );
+
+  server.delete<{ Params: IdParamsSchema }>(
+    "/:id",
+    {
+      ...canWrite,
+      schema: {
+        params: idParamsSchema,
+      },
+    },
+    deleteBatchHandler,
+  );
+
+  server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
+    "/:id/deactivate",
+    { schema: { params: idParamsSchema, body: versionBodySchema } },
+    deactivateBatchHandler,
   );
 }
 

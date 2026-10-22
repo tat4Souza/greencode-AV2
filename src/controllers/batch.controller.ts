@@ -6,13 +6,15 @@ import type {
   UpdateBatchStatusInput,
 } from "../schemas/batch.schema.js";
 import {
+  deactivateBatchById,
+  deleteBatchById,
   getAllBatches,
   getBatchById,
   registerBatch,
   updateBatchById,
   updateBatchByStatus,
 } from "../services/batch.service.js";
-import type { IdParamsSchema } from "../schemas/common.schema.js";
+import type { IdParamsSchema, VersionBody } from "../schemas/common.schema.js";
 import type { BatchStatus } from "../generated/prisma/enums.js";
 
 export async function registerBatchHandler(
@@ -64,4 +66,20 @@ export async function updateBatchByStatusHandler(
     request.body.status,
   );
   return reply.send(batch);
+}
+
+export async function deleteBatchHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema }>,
+  reply: FastifyReply,
+) {
+  await deleteBatchById(request.params.id);
+  return reply.code(204).send();
+}
+
+export async function deactivateBatchHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
+  reply: FastifyReply,
+) {
+  await deactivateBatchById(request.params.id, request.body.version);
+  return reply.code(204).send();
 }

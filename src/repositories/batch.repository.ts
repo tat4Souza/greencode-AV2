@@ -104,3 +104,18 @@ export async function findExistingBarCodes(barCodes: string[]) {
   });
   return found.map((e) => e.barCode);
 }
+
+export async function deleteBatch(id: string) {
+  return prisma.batch.delete({
+    where: { id },
+    select: { id: true },
+  });
+}
+
+export async function deactivateBatch(id: string, version: number) {
+  const result = await prisma.batch.updateMany({
+    where: { id, version, active: true },
+    data: { active: false, version: { increment: 1 } },
+  });
+  return result.count;
+}
