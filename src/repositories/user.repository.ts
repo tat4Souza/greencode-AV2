@@ -69,3 +69,15 @@ export function deleteUser(id: string) {
     select: publicUserSelect,
   });
 }
+
+export async function deactivateUser(id: string, version: number) {
+  const result = await prisma.user.updateMany({
+    where: { id, version, active: true },
+    data: { active: false, version: { increment: 1 } },
+  });
+  return result.count;
+}
+
+export function countActiveAdmins() {
+  return prisma.user.count({ where: { role: "ADMIN", active: true } });
+}

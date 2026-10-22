@@ -4,13 +4,27 @@ import type {
   UpdateUserInput,
 } from "../schemas/user.schema.js";
 import {
+  countActiveAdmins,
   createUser,
+  deactivateUser,
   deleteUser,
   findUserById,
   findUsers,
   updateUser,
 } from "../repositories/user.repository.js";
-import { conflict, isPrismaError, notFound } from "../lib/errors.js";
+import {
+  badRequest,
+  conflict,
+  isPrismaError,
+  notFound,
+} from "../lib/errors.js";
+import type { Role } from "../generated/prisma/enums.js";
+
+async function assertNotLastAdmin(role: Role) {
+  if (role === "ADMIN" && (await countActiveAdmins()) <= 1) {
+    throw badRequest("Não é possível remover o último administrador");
+  }
+}
 
 export async function registerUser(
   input: CreateUserInput,
@@ -64,11 +78,32 @@ export async function updateUserById(id: string, input: UpdateUserInput) {
   }
 }
 
+export async function deactivateUserById(id: string, version: number) {
+  const user = await findUserById(id);
+  if (!user) throw notFound("Usuário");
+  await assertNotLastAdmin(user.role);
+
+  const count = await deactivateUser(id, version);
+  if (count === 0)
+    throw conflict(
+      "Usuário foi alterado por outra pessoa. Recarregue os dados",
+    );
+}
+
 export async function deleteUserById(id: string) {
+  const user = await findUserById(id);
+  if (!user) throw notFound("Usuário");
+  await assertNotLastAdmin(user.role);
+
   try {
-    return await deleteUser(id);
+    await deleteUser(id);
   } catch (e) {
     if (isPrismaError(e, "P2025")) throw notFound("Usuário");
+    if (isPrismaError(e, "P2003")) {
+      throw conflict(
+        "Usuário possui registros vinculados. Inative-o em vez de removê-lo.",
+      );
+    }
     throw e;
   }
 }

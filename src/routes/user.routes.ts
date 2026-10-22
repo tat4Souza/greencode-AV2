@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import {
+  deactivateUserHandler,
   deleteUserHandler,
   getUserByIdHandler,
   getUsersHandler,
@@ -17,7 +18,9 @@ import { requireRole } from "../middlewares/auth.js";
 import { z } from "zod";
 import {
   idParamsSchema,
+  versionBodySchema,
   type IdParamsSchema,
+  type VersionBody,
 } from "../schemas/common.schema.js";
 
 async function userRoutes(server: FastifyInstance) {
@@ -76,6 +79,12 @@ async function userRoutes(server: FastifyInstance) {
       },
     },
     deleteUserHandler,
+  );
+
+  server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
+    "/:id/deactivate",
+    { schema: { params: idParamsSchema, body: versionBodySchema } },
+    deactivateUserHandler,
   );
 }
 

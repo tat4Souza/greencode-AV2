@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import {
+  deactivateUserById,
   deleteUserById,
   getUserById,
   getUsers,
@@ -11,7 +12,7 @@ import type {
   UpdateUserInput,
 } from "../schemas/user.schema.js";
 import { forbidden } from "../lib/errors.js";
-import type { IdParamsSchema } from "../schemas/common.schema.js";
+import type { IdParamsSchema, VersionBody } from "../schemas/common.schema.js";
 
 export async function registerUserHandler(
   request: FastifyRequest<{
@@ -57,7 +58,18 @@ export async function deleteUserHandler(
   if (request.user.id === request.params.id) {
     throw forbidden("Você não pode deletar a si mesmo");
   }
-
   await deleteUserById(request.params.id);
+  return reply.code(204).send();
+}
+
+export async function deactivateUserHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
+  reply: FastifyReply,
+) {
+  if (request.user.id === request.params.id) {
+    throw forbidden("Você não pode inativar a si mesmo");
+  }
+
+  await deactivateUserById(request.params.id, request.body.version);
   return reply.code(204).send();
 }

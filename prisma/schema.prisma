@@ -73,6 +73,7 @@ model User {
   createdById  String?   @map("us_criado_por") @db.Uuid
   createdAt    DateTime @default(now()) @map("us_criado_em")
   updatedAt    DateTime @updatedAt @map("us_atualizado_em")
+  active Boolean @default(true) @map("us_ativo")
   version      Int      @default(0) @map("us_versao_otimista")
 
   organizations Organization[]
@@ -103,6 +104,7 @@ model Organization {
   createdById       String   @map("org_criado_por") @db.Uuid
   createdAt         DateTime @default(now()) @map("org_criado_em")
   updatedAt         DateTime @updatedAt @map("org_atualizado_em")
+  active Boolean @default(true) @map("org_ativo")
   version           Int      @default(0) @map("org_versao_otimista")
 
   createdBy User      @relation(fields: [createdById], references: [id])
@@ -123,7 +125,7 @@ model Contract {
   autoRenewal  Boolean  @default(false) @map("cont_renovacao_automatica")
   version      Int      @default(0) @map("cont_versao_otimista")
 
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@map("contrato")
 }
@@ -139,9 +141,10 @@ model Batch {
   createdById String      @map("lote_criado_por") @db.Uuid
   createdAt   DateTime    @default(now()) @map("lote_criado_em")
   updatedAt   DateTime    @updatedAt @map("lote_atualizado_em")
+  active Boolean @default(true) @map("lote_ativo")
   version     Int         @default(0) @map("lote_versao_otimista")
 
-  org        Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   createdBy  User         @relation(fields: [createdById], references: [id])
   equipments Equipment[]
 
@@ -168,7 +171,7 @@ model Equipment {
   version           Int            @default(0) @map("equi_versao_otimista")
 
   createdBy User       @relation(fields: [createdById], references: [id])
-  batch     Batch      @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  batch     Batch      @relation(fields: [batchId], references: [id], onDelete: Cascade)
   movements Movement[]
 
   @@unique([batchId, batchPosition])
@@ -192,7 +195,7 @@ model Movement {
   obs               String?         @map("mov_observacao")
 
   performedBy User      @relation(fields: [performedById], references: [id])
-  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
 
   @@index([equipmentId, performedAt])
   @@index([performedById])
