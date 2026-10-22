@@ -1,4 +1,3 @@
-import "dotenv/config";
 import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import fjwt from "@fastify/jwt";
 import swagger from "@fastify/swagger";
@@ -15,16 +14,20 @@ import { Prisma } from "./generated/prisma/client.js";
 import organizationRoutes from "./routes/organization.routes.js";
 import batchRoutes from "./routes/batch.routes.js";
 import equipmentsRoutes from "./routes/equipment.routes.js";
+import { env } from "./lib/env.js";
+import { prisma } from "./lib/prisma.js";
 
-export const server = Fastify();
+export const server = Fastify({ logger: true });
 
-const jwtSecret = process.env.JWT_SECRET;
-if (!jwtSecret) {
-  throw new Error("JWT_SECRET não definido no .env");
-}
+server.setValidatorCompiler(validatorCompiler);
+server.setSerializerCompiler(serializerCompiler);
 
 server.register(fjwt, {
-  secret: jwtSecret,
+  secret: env.JWT_SECRET,
+});
+
+server.addHook("onClose", async () => {
+  await prisma.$disconnect();
 });
 
 server.get("/healthcheck", async function () {
@@ -47,10 +50,35 @@ server.setErrorHandler((error, _request, reply) => {
   return reply.send(error);
 });
 
-async function main() {
-  server.setValidatorCompiler(validatorCompiler);
-  server.setSerializerCompiler(serializerCompiler);
+let shuttingDown = false;
 
+async function shutdown(signal: string) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
+  server.log.info(`${signal} recebido, encerrando o servidor...`);
+
+  const forceExit = setTimeout(() => {
+    server.log.error("Tempo limite excedido, forçando encerramento");
+    process.exit(1);
+  }, 10_000);
+  forceExit.unref();
+
+  try {
+    await server.close();
+    server.log.info("Servidor encerrado com sucesso");
+    process.exit(0);
+  } catch (e) {
+    server.log.error(e, "Erro ao encerrar o servidor");
+    process.exit(1);
+  }
+}
+
+for (const signal of ["SIGINT", "SIGTERM", "SIGBREAK"] as const) {
+  process.once(signal, () => void shutdown(signal));
+}
+
+async function main() {
   await server.register(swagger, {
     openapi: {
       info: { title: "Greencode API", version: "1.0.0" },
@@ -59,13 +87,18 @@ async function main() {
           bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
         },
       },
+      security: [{ bearerAuth: [] }],
     },
     transform: jsonSchemaTransform,
   });
 
-  await server.register(swaggerUi, { routePrefix: "/docs" });
+  await server.register(swaggerUi, {
+    routePrefix: "/docs",
+    uiConfig: { persistAuthorization: true },
+  });
 
   server.register(authRoutes, { prefix: "api/auth" });
+
   server.register(async (authentiicated) => {
     authentiicated.addHook("onRequest", auth);
 
@@ -78,13 +111,9 @@ async function main() {
   });
 
   try {
-    await server.listen({
-      port: Number(process.env.PORT) || 3000,
-      host: "0.0.0.0",
-    });
-    console.log(`Server pronto em http://localhost:3000`);
+    await server.listen({ port: env.PORT, host: env.HOST });
   } catch (e) {
-    console.error(e);
+    server.log.error(e);
     process.exit(1);
   }
 }

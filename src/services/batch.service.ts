@@ -12,7 +12,6 @@ import {
   deleteBatch,
   findAllBatches,
   findBatchById,
-  findExistingBarCodes,
   updateBatch,
   updateBatchStatus,
 } from "../repositories/batch.repository.js";
@@ -48,32 +47,8 @@ export async function registerBatch(
 
   assertValidEnteredAt(input.enteredAt);
 
-  const codes = equipments.map((e) => e.barCode);
-
-  const repeatedCodes = findDuplicates(codes);
-  if (repeatedCodes.length > 0)
-    throw badRequest(
-      `Códigos de barras repetidos na lista: ${repeatedCodes.join(", ")}`,
-    );
-
-  const repeatedPositions = findDuplicates(
-    equipments.map((e) => e.batchPosition),
-  );
-  if (repeatedPositions.length > 0)
-    throw badRequest(
-      `Posições repetidas na lista: ${repeatedPositions.join(", ")}`,
-    );
-
   const org = await findOrgById(input.orgId);
   if (!org) throw notFound("Organização");
-
-  if (codes.length > 0) {
-    const existing = await findExistingBarCodes(codes);
-    if (existing.length > 0)
-      throw conflict(
-        `Códigos de barras já cadastrados: ${existing.join(", ")}`,
-      );
-  }
 
   try {
     const batch = await createBatch({ ...input, createdById });

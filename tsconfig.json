@@ -4,6 +4,8 @@
     "target": "esnext",
     "types": ["node"],
 
+    "noEmit": true,
+
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

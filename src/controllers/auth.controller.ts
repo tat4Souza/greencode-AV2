@@ -8,6 +8,7 @@ import {
   logout,
   validateCredentials,
 } from "../services/auth.service.js";
+import { env } from "../lib/env.js";
 
 export async function loginHandler(
   request: FastifyRequest<{ Body: LoginInput }>,
@@ -19,7 +20,7 @@ export async function loginHandler(
 
   const accessToken = await reply.jwtSign(
     { id: user.id, role: user.role, tv: user.tokenVersion },
-    { expiresIn: "1h" },
+    { expiresIn: env.JWT_EXPIRES_IN },
   );
 
   return reply.send({ accessToken });

@@ -21,7 +21,6 @@ async function movementRoutes(server: FastifyInstance) {
   server.get<{ Params: IdParamsSchema }>(
     "/",
     {
-      ...canWrite,
       schema: {
         params: idParamsSchema,
         response: { 200: z.array(movementResponseSchema) },

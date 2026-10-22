@@ -24,12 +24,11 @@ import {
 } from "../schemas/common.schema.js";
 
 async function userRoutes(server: FastifyInstance) {
-  const canWrite = { onRequest: [requireRole("ADMIN")] };
+  server.addHook("onRequest", requireRole("ADMIN"));
 
   server.post<{ Body: CreateUserInput }>(
     "/",
     {
-      ...canWrite,
       schema: {
         body: createUserSchema,
         response: { 201: userResponse },
@@ -60,7 +59,6 @@ async function userRoutes(server: FastifyInstance) {
   server.put<{ Params: IdParamsSchema; Body: UpdateUserInput }>(
     "/:id",
     {
-      ...canWrite,
       schema: {
         params: idParamsSchema,
         body: updateUserSchema,
@@ -73,7 +71,6 @@ async function userRoutes(server: FastifyInstance) {
   server.delete<{ Params: IdParamsSchema }>(
     "/:id",
     {
-      ...canWrite,
       schema: {
         params: idParamsSchema,
       },
