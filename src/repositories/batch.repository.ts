@@ -97,12 +97,12 @@ export async function updateBatchStatus(
   return result.count;
 }
 
-export async function findExistingBarCodes(barCodes: string[]) {
+export async function findExisting(ids: string[]) {
   const found = await prisma.equipment.findMany({
-    where: { barCode: { in: barCodes } },
-    select: { barCode: true },
+    where: { id: { in: ids } },
+    select: { id: true },
   });
-  return found.map((e) => e.barCode);
+  return found.map((e) => e.id);
 }
 
 export async function deleteBatch(id: string) {

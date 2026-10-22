@@ -157,14 +157,13 @@ model Batch {
 model Equipment {
   id                String         @id @default(uuid()) @map("equi_cod") @db.Uuid
   batchId           String         @map("equi_lote_cod") @db.Uuid
-  barCode           String         @unique @map("equi_codigo_barras")
   type              EquipmentType  @map("equi_tipo")
   brand             String         @map("equi_marca")
   model             String         @map("equi_modelo")
   manufacturingYear Int            @map("equi_ano_fabricacao")
   physicalState     PhysicalState  @map("equi_estado_fisico")
   weightKG          Decimal        @map("equi_peso") @db.Decimal(10, 3)
-  batchPosition     Int            @map("equi_posicao_lote")
+  batchPosition     Int            @default(1) @map("equi_posicao_lote")
   status            TrackingStatus @default(AGUARDANDO_TRIAGEM) @map("equi_status")
   createdById       String         @map("equi_criado_por") @db.Uuid
   createdAt         DateTime       @default(now()) @map("equi_criado_em")

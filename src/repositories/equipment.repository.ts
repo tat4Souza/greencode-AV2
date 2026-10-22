@@ -12,7 +12,6 @@ import type {
 export const publicEquipmentSelect = {
   id: true,
   batchId: true,
-  barCode: true,
   type: true,
   brand: true,
   model: true,
@@ -28,9 +27,23 @@ export const publicEquipmentSelect = {
 } satisfies Prisma.EquipmentSelect;
 
 export function createEquipment(
-  data: CreateEquipmentInput & { batchId: string; createdById: string },
+  data: Omit<CreateEquipmentInput, "batchPosition"> & {
+    batchId: string;
+    createdById: string;
+  },
 ) {
-  return prisma.equipment.create({ data, select: publicEquipmentSelect });
+  return prisma.$transaction(async (tx) => {
+    const last = await tx.equipment.aggregate({
+      where: { batchId: data.batchId },
+      _max: { batchPosition: true },
+    });
+    const batchPosition = (last._max.batchPosition ?? 0) + 1;
+
+    return tx.equipment.create({
+      data: { ...data, batchPosition },
+      select: publicEquipmentSelect,
+    });
+  });
 }
 
 export function findAllEquipments(filters: {
@@ -48,13 +61,6 @@ export function findAllEquipments(filters: {
 export function findEquipmentById(id: string) {
   return prisma.equipment.findUnique({
     where: { id },
-    select: publicEquipmentSelect,
-  });
-}
-
-export function findEquipmentByBarcode(barCode: string) {
-  return prisma.equipment.findUnique({
-    where: { barCode },
     select: publicEquipmentSelect,
   });
 }

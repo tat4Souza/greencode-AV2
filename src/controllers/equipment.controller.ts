@@ -10,7 +10,6 @@ import {
   changeEquipmentState,
   deleteEquipmentById,
   getAllEquipments,
-  getEquipmentByBarcode,
   getEquipmentById,
   registerEquipment,
   updateEquipamentById,
@@ -48,15 +47,6 @@ export async function getEquipmentByIdHandler(
   reply: FastifyReply,
 ) {
   const equipment = await getEquipmentById(request.params.id);
-
-  return reply.send(equipment);
-}
-
-export async function getEquipmentByBarcodeHandler(
-  request: FastifyRequest<{ Params: BarcodeParams }>,
-  reply: FastifyReply,
-) {
-  const equipment = await getEquipmentByBarcode(request.params.code);
 
   return reply.send(equipment);
 }

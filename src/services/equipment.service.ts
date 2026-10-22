@@ -11,13 +11,12 @@ import {
 } from "../lib/errors.js";
 import {
   findBatchById,
-  findExistingBarCodes,
+  findExisting,
 } from "../repositories/batch.repository.js";
 import {
   createEquipment,
   deleteEquipment,
   findAllEquipments,
-  findEquipmentByBarcode,
   findEquipmentById,
   updateEquipment,
 } from "../repositories/equipment.repository.js";
@@ -42,7 +41,7 @@ export async function registerEquipment(
     );
   }
 
-  const existing = await findExistingBarCodes([input.barCode]);
+  const existing = await findExisting([batchId]);
   if (existing.length > 0)
     throw conflict(`Código de barras já cadastrado: ${existing.join(", ")}`);
 
@@ -65,14 +64,6 @@ export async function getAllEquipments(
 
 export async function getEquipmentById(id: string) {
   const equipment = await findEquipmentById(id);
-
-  if (!equipment) throw notFound("Equipamento");
-
-  return equipment;
-}
-
-export async function getEquipmentByBarcode(id: string) {
-  const equipment = await findEquipmentByBarcode(id);
 
   if (!equipment) throw notFound("Equipamento");
 

@@ -12,7 +12,6 @@ import {
   changeEquipmentStateHandler,
   deleteEquipmentHandler,
   getAllEquipmentsHandler,
-  getEquipmentByBarcodeHandler,
   getEquipmentByIdHandler,
   updateEquipmentByIdHandler,
 } from "../controllers/equipment.controller.js";
@@ -51,17 +50,6 @@ async function equipmentsRoutes(server: FastifyInstance) {
       },
     },
     getEquipmentByIdHandler,
-  );
-
-  server.get<{ Params: BarcodeParams }>(
-    "/barcode/:code",
-    {
-      schema: {
-        params: barcodeParamsSchema,
-        response: { 200: equipmentResponseSchema },
-      },
-    },
-    getEquipmentByBarcodeHandler,
   );
 
   server.put<{ Params: IdParamsSchema; Body: UpdateEquipmentInput }>(
