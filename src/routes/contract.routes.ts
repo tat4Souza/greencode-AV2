@@ -11,6 +11,7 @@ import {
   type UpdateContractInput,
 } from "../schemas/contract.schema.js";
 import {
+  deleteContractHandler,
   getContractHandler,
   registerContractHandler,
   updateContractHandler,
@@ -55,6 +56,17 @@ async function contractRoutes(server: FastifyInstance) {
       },
     },
     updateContractHandler,
+  );
+
+  server.delete<{ Params: IdParamsSchema }>(
+    "/",
+    {
+      ...canWrite,
+      schema: {
+        params: idParamsSchema,
+      },
+    },
+    deleteContractHandler,
   );
 }
 

@@ -75,3 +75,28 @@ export async function updateOrganization(
   });
   return result.count;
 }
+
+export async function deleteOrganization(id: string) {
+  return prisma.organization.delete({
+    where: { id },
+    select: { id: true },
+  });
+}
+
+export async function deactivateOrganization(id: string, version: number) {
+  return prisma.$transaction(async (tx) => {
+    const result = await tx.organization.updateMany({
+      where: { id, version, active: true },
+      data: { active: false, version: { increment: 1 } },
+    });
+
+    if (result.count === 0) return 0;
+
+    await tx.batch.updateMany({
+      where: { orgId: id, active: true },
+      data: { active: false, version: { increment: 1 } },
+    });
+
+    return result.count;
+  });
+}

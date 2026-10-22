@@ -6,6 +6,7 @@ import {
 } from "../lib/errors.js";
 import {
   createContract,
+  deleteContract,
   findContract,
   updateContract,
 } from "../repositories/contract.repository.js";
@@ -70,4 +71,13 @@ export async function updateContractById(
     );
   }
   return await findContract(orgId);
+}
+
+export async function deleteContractById(id: string) {
+  try {
+    await deleteContract(id);
+  } catch (e) {
+    if (isPrismaError(e, "P2025")) throw notFound("Organização");
+    throw e;
+  }
 }

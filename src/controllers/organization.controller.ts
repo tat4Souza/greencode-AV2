@@ -1,5 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import {
+  deactivateOrgById,
+  deleteOrgById,
   getActiveOrgs,
   getOrgById,
   registerOrganization,
@@ -9,7 +11,7 @@ import type {
   CreateOrgInput,
   UpdateOrgInput,
 } from "../schemas/organization.schema.js";
-import type { IdParamsSchema } from "../schemas/common.schema.js";
+import type { IdParamsSchema, VersionBody } from "../schemas/common.schema.js";
 
 export async function registerOrgHandler(
   request: FastifyRequest<{ Body: CreateOrgInput }>,
@@ -46,4 +48,20 @@ export async function updateOrgByIdHandler(
 ) {
   const organization = await updateOrgById(request.params.id, request.body);
   return reply.send(organization);
+}
+
+export async function deleteOrgHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema }>,
+  reply: FastifyReply,
+) {
+  await deleteOrgById(request.params.id);
+  return reply.code(204).send();
+}
+
+export async function deactivateOrgHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
+  reply: FastifyReply,
+) {
+  await deactivateOrgById(request.params.id, request.body.version);
+  return reply.code(204).send();
 }

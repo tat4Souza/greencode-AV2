@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import {
+  deactivateOrgHandler,
+  deleteOrgHandler,
   getActiveOrgsHandler,
   getOrgByIdHandler,
   registerOrgHandler,
@@ -14,7 +16,9 @@ import {
 } from "../schemas/organization.schema.js";
 import {
   idParamsSchema,
+  versionBodySchema,
   type IdParamsSchema,
+  type VersionBody,
 } from "../schemas/common.schema.js";
 import { z } from "zod";
 import contractRoutes from "./contract.routes.js";
@@ -68,7 +72,22 @@ async function organizationRoutes(server: FastifyInstance) {
 
   server.register(contractRoutes, { prefix: "/:id/contract" });
 
-  // falta um delete com o soft delete
+  server.delete<{ Params: IdParamsSchema }>(
+    "/:id",
+    {
+      ...canWrite,
+      schema: {
+        params: idParamsSchema,
+      },
+    },
+    deleteOrgHandler,
+  );
+
+  server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
+    "/:id/deactivate",
+    { schema: { params: idParamsSchema, body: versionBodySchema } },
+    deactivateOrgHandler,
+  );
 }
 
 export default organizationRoutes;

@@ -40,3 +40,10 @@ export async function updateContract(
   });
   return result.count;
 }
+
+export async function deleteContract(orgId: string) {
+  return prisma.contract.delete({
+    where: { orgId },
+    select: { id: true },
+  });
+}

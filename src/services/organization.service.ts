@@ -6,6 +6,8 @@ import {
 } from "../lib/errors.js";
 import {
   createOrganization,
+  deactivateOrganization,
+  deleteOrganization,
   findActiveOrgs,
   findOrgById,
   updateOrganization,
@@ -61,6 +63,26 @@ export async function updateOrgById(id: string, input: UpdateOrgInput) {
     return await findOrgById(id);
   } catch (e) {
     if (isPrismaError(e, "P2002")) throw conflict("CNPJ já cadastrado");
+    throw e;
+  }
+}
+
+export async function deactivateOrgById(id: string, version: number) {
+  const org = await findOrgById(id);
+  if (!org) throw notFound("Organização");
+
+  const count = await deactivateOrganization(id, version);
+  if (count === 0)
+    throw conflict(
+      "Organização foi alterada por outra pessoa. Recarregue os dados",
+    );
+}
+
+export async function deleteOrgById(id: string) {
+  try {
+    await deleteOrganization(id);
+  } catch (e) {
+    if (isPrismaError(e, "P2025")) throw notFound("Organização");
     throw e;
   }
 }

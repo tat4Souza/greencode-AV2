@@ -9,6 +9,7 @@ import {
   updateContractById,
 } from "../services/contract.service.js";
 import type { IdParamsSchema } from "../schemas/common.schema.js";
+import { deleteContract } from "../repositories/contract.repository.js";
 
 export async function registerContractHandler(
   request: FastifyRequest<{
@@ -38,4 +39,12 @@ export async function updateContractHandler(
 ) {
   const contract = await updateContractById(request.params.id, request.body);
   return reply.send(contract);
+}
+
+export async function deleteContractHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema }>,
+  reply: FastifyReply,
+) {
+  await deleteContract(request.params.id);
+  return reply.code(204).send();
 }
