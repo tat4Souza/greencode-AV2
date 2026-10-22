@@ -15,6 +15,7 @@ import {
 } from "../repositories/batch.repository.js";
 import {
   createEquipment,
+  deleteEquipment,
   findAllEquipments,
   findEquipmentByBarcode,
   findEquipmentById,
@@ -191,4 +192,13 @@ export async function changeEquipmentState(
   }
 
   return getEquipmentById(equipmentId);
+}
+
+export async function deleteEquipmentById(id: string) {
+  try {
+    await deleteEquipment(id);
+  } catch (e) {
+    if (isPrismaError(e, "P2025")) throw notFound("Equipamento");
+    throw e;
+  }
 }

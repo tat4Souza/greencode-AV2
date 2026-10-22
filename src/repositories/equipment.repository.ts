@@ -70,3 +70,10 @@ export async function updateEquipment(
   });
   return result.count;
 }
+
+export async function deleteEquipment(id: string) {
+  return prisma.equipment.delete({
+    where: { id },
+    select: { id: true },
+  });
+}

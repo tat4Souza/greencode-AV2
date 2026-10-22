@@ -4,9 +4,16 @@ import {
   type IdParamsSchema,
 } from "../schemas/common.schema.js";
 import { movementResponseSchema } from "../schemas/movements.schema.js";
-import { getMovementsByEquipmentHandler } from "../controllers/movement.controller.js";
+import {
+  deleteMovementHandler,
+  getMovementsByEquipmentHandler,
+} from "../controllers/movement.controller.js";
 import { z } from "zod";
 import { requireRole } from "../middlewares/auth.js";
+import {
+  barcodeParamsSchema,
+  type BarcodeParams,
+} from "../schemas/equipment.schema.js";
 
 async function movementRoutes(server: FastifyInstance) {
   const canWrite = { onRequest: [requireRole("ADMIN", "GESTOR")] };
@@ -21,6 +28,17 @@ async function movementRoutes(server: FastifyInstance) {
       },
     },
     getMovementsByEquipmentHandler,
+  );
+
+  server.delete<{ Params: BarcodeParams }>(
+    "/:code",
+    {
+      ...canWrite,
+      schema: {
+        params: barcodeParamsSchema,
+      },
+    },
+    deleteMovementHandler,
   );
 }
 

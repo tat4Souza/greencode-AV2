@@ -10,6 +10,7 @@ import {
 } from "../schemas/equipment.schema.js";
 import {
   changeEquipmentStateHandler,
+  deleteEquipmentHandler,
   getAllEquipmentsHandler,
   getEquipmentByBarcodeHandler,
   getEquipmentByIdHandler,
@@ -88,6 +89,17 @@ async function equipmentsRoutes(server: FastifyInstance) {
       },
     },
     changeEquipmentStateHandler,
+  );
+
+  server.delete<{ Params: IdParamsSchema }>(
+    "/:id",
+    {
+      ...canWrite,
+      schema: {
+        params: idParamsSchema,
+      },
+    },
+    deleteEquipmentHandler,
   );
 
   server.register(movementRoutes, { prefix: "/:id/movements" });

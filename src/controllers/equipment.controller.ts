@@ -8,6 +8,7 @@ import type {
 import type { IdParamsSchema } from "../schemas/common.schema.js";
 import {
   changeEquipmentState,
+  deleteEquipmentById,
   getAllEquipments,
   getEquipmentByBarcode,
   getEquipmentById,
@@ -84,4 +85,12 @@ export async function changeEquipmentStateHandler(
     request.user.id,
   );
   return reply.send(equipment);
+}
+
+export async function deleteEquipmentHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema }>,
+  reply: FastifyReply,
+) {
+  await deleteEquipmentById(request.params.id);
+  return reply.code(204).send();
 }

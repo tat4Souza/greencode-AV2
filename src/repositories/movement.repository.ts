@@ -67,3 +67,10 @@ export function findMovementsByEquipment(equipmentId: string) {
     orderBy: { performedAt: "desc" },
   });
 }
+
+export async function deleteMovement(id: string) {
+  return prisma.movement.delete({
+    where: { id },
+    select: { id: true },
+  });
+}
