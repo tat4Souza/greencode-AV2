@@ -13,10 +13,14 @@ import {
 import { auth } from "../middlewares/auth.js";
 
 async function authRoutes(server: FastifyInstance) {
+  const authTag = { tags: ["Auth"] };
   server.post(
     "/login",
     {
       schema: {
+        ...authTag,
+        summary: "Realizar login na aplicação",
+        security: [],
         body: loginSchema,
         response: { 200: loginResponseSchema },
       },
@@ -24,11 +28,25 @@ async function authRoutes(server: FastifyInstance) {
     loginHandler,
   );
 
-  server.post("/logout", { onRequest: [auth] }, logoutHandler);
+  server.post(
+    "/logout",
+    {
+      onRequest: [auth],
+      schema: { ...authTag, summary: "Realizar logout na aplicação" },
+    },
+    logoutHandler,
+  );
 
   server.patch<{ Body: ChangePasswordInput }>(
     "/password",
-    { onRequest: [auth], schema: { body: changePasswordSchema } },
+    {
+      onRequest: [auth],
+      schema: {
+        ...authTag,
+        summary: "Trocar a senha de um usuário",
+        body: changePasswordSchema,
+      },
+    },
     changePasswordHandler,
   );
 }

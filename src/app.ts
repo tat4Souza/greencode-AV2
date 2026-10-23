@@ -16,6 +16,7 @@ import batchRoutes from "./routes/batch.routes.js";
 import equipmentsRoutes from "./routes/equipment.routes.js";
 import { env } from "./lib/env.js";
 import { prisma } from "./lib/prisma.js";
+import { ZodError } from "zod";
 
 export const server = Fastify({ logger: true });
 
@@ -34,21 +35,56 @@ server.get("/healthcheck", async function () {
   return { status: "OK" };
 });
 
-server.setErrorHandler((error, _request, reply) => {
+server.setErrorHandler((error, request, reply) => {
+  if (error instanceof ZodError) {
+    return reply.code(400).send({
+      message: error.issues
+        .map((err) => `${err.path.join(".")}: ${err.message}`)
+        .join(", "),
+    });
+  }
+
+  if (hasStatusCode(error)) {
+    return reply.code(error.statusCode).send({ message: error.message });
+  }
+
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2025") {
       return reply.code(404).send({ message: "Recurso não encontrado" });
     }
+
     if (error.code === "P2002") {
       const fields = (error.meta?.target as string[] | undefined)?.join(", ");
       return reply.code(409).send({
         message: `Valor já cadastrado${fields ? ` (${fields})` : ""}`,
       });
     }
+
+    if (error.code === "P2003") {
+      return reply.code(400).send({
+        message:
+          "Operação inválida: registro relacionado não encontrado ou em uso.",
+      });
+    }
   }
 
-  return reply.send(error);
+  request.log.error(error);
+
+  return reply.code(500).send({
+    message: "Erro interno do servidor",
+  });
 });
+
+function hasStatusCode(
+  error: unknown,
+): error is { statusCode: number; message: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error &&
+    typeof (error as any).statusCode === "number"
+  );
+}
 
 let shuttingDown = false;
 
@@ -97,16 +133,16 @@ async function main() {
     uiConfig: { persistAuthorization: true },
   });
 
-  server.register(authRoutes, { prefix: "api/auth" });
+  server.register(authRoutes, { prefix: "/api/auth" });
 
   server.register(async (authentiicated) => {
     authentiicated.addHook("onRequest", auth);
 
-    authentiicated.register(userRoutes, { prefix: "api/users" });
+    authentiicated.register(userRoutes, { prefix: "/api/users" });
     authentiicated.register(organizationRoutes, {
-      prefix: "api/organizations",
+      prefix: "/api/organizations",
     });
-    authentiicated.register(batchRoutes, { prefix: "api/batches" });
+    authentiicated.register(batchRoutes, { prefix: "/api/batches" });
     authentiicated.register(equipmentsRoutes, { prefix: "api/equipments" });
   });
 

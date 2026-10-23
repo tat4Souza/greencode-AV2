@@ -9,6 +9,7 @@ import {
 } from "../services/user.service.js";
 import type {
   CreateUserInput,
+  ListUsersQuery,
   UpdateUserInput,
 } from "../schemas/user.schema.js";
 import { forbidden } from "../lib/errors.js";
@@ -25,10 +26,11 @@ export async function registerUserHandler(
 }
 
 export async function getUsersHandler(
-  _request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: ListUsersQuery }>,
   reply: FastifyReply,
 ) {
-  const users = await getUsers();
+  const { role, active } = request.query;
+  const users = await getUsers(role, active);
 
   return reply.send(users);
 }

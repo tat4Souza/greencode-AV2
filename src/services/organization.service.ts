@@ -8,11 +8,12 @@ import {
   createOrganization,
   deactivateOrganization,
   deleteOrganization,
-  findActiveOrgs,
   findOrgById,
+  findOrgs,
   updateOrganization,
 } from "../repositories/organization.repository.js";
 import type {
+  ContractFilter,
   CreateOrgInput,
   UpdateOrgInput,
 } from "../schemas/organization.schema.js";
@@ -22,6 +23,10 @@ export async function registerOrganization(
   createdById: string,
 ) {
   try {
+    if (input.contract?.expiresAt && input.contract.expiresAt <= new Date()) {
+      throw badRequest("A data de vencimento do contrato deve ser futura");
+    }
+
     return await createOrganization({ ...input, createdById });
   } catch (e) {
     if (isPrismaError(e, "P2002")) {
@@ -39,12 +44,17 @@ export async function getOrgById(id: string) {
   return organization;
 }
 
-export async function getActiveOrgs() {
-  return findActiveOrgs();
+export async function getOrgs(
+  active: boolean = true,
+  contract?: ContractFilter,
+) {
+  return findOrgs({ active, contract });
 }
 
 export async function updateOrgById(id: string, input: UpdateOrgInput) {
   const { version, ...changes } = input;
+  const curOrg = await findOrgById(id);
+  if (!curOrg) throw notFound("Organização");
 
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
@@ -53,8 +63,6 @@ export async function updateOrgById(id: string, input: UpdateOrgInput) {
     const count = await updateOrganization(id, version, changes);
 
     if (count === 0) {
-      const exists = await findOrgById(id);
-      if (!exists) throw notFound("Organização");
       throw conflict(
         "Organização já foi alterada por outra pessoa. Recarregue os dados.",
       );

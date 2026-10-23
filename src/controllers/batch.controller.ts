@@ -29,9 +29,9 @@ export async function getAllBatchesHandler(
   request: FastifyRequest<{ Querystring: ListBatchesQuery }>,
   reply: FastifyReply,
 ) {
-  const { orgId, status } = request.query;
+  const { orgId, status, active } = request.query;
 
-  const batches = await getAllBatches(orgId, status);
+  const batches = await getAllBatches(orgId, status, active);
 
   return reply.send(batches);
 }

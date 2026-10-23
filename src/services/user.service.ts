@@ -4,6 +4,7 @@ import type {
   UpdateUserInput,
 } from "../schemas/user.schema.js";
 import {
+  bumpTokenVersion,
   countActiveAdmins,
   createUser,
   deactivateUser,
@@ -30,11 +31,11 @@ export async function registerUser(
   input: CreateUserInput,
   createdById: string,
 ) {
-  const { password, ...rest } = input;
+  const { password, ...changes } = input;
   const passwordHash = await bcrypt.hash(password, 10);
 
   try {
-    return await createUser({ ...rest, passwordHash, createdById });
+    return await createUser({ ...changes, passwordHash, createdById });
   } catch (e) {
     if (isPrismaError(e, "P2002")) {
       throw conflict("Email já cadastrado");
@@ -43,8 +44,8 @@ export async function registerUser(
   }
 }
 
-export async function getUsers() {
-  return findUsers();
+export async function getUsers(role?: Role, active: boolean = true) {
+  return findUsers({ role, active });
 }
 
 export async function getUserById(id: string) {
@@ -56,21 +57,37 @@ export async function getUserById(id: string) {
 }
 
 export async function updateUserById(id: string, input: UpdateUserInput) {
-  const { version, password, ...rest } = input;
+  const { version, ...changes } = input;
+  const curUser = await findUserById(id);
+  if (!curUser) throw notFound("Usuário");
+
+  if (Object.keys(changes).length === 0)
+    throw badRequest("É necessário passar o conteúdo a ser editado");
 
   try {
-    const count = await updateUser(id, version, {
-      ...rest,
-      ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}),
-    });
+    if (
+      changes.role !== undefined &&
+      curUser.role === "ADMIN" &&
+      changes.role !== "ADMIN"
+    ) {
+      assertNotLastAdmin(changes.role);
+    }
+
+    const count = await updateUser(id, version, { ...changes });
 
     if (count === 0) {
-      const exists = await findUserById(id);
-      if (!exists) throw notFound("Usuário");
       throw conflict(
         "Usuário foi alterado por outra pessoa. Recarregue os dados.",
       );
     }
+
+    if (
+      (changes.role !== undefined && curUser.role !== changes.role) ||
+      (changes.email !== undefined && curUser.email !== changes.email)
+    ) {
+      await bumpTokenVersion(id);
+    }
+
     return await findUserById(id);
   } catch (e) {
     if (isPrismaError(e, "P2002")) throw conflict("Email já cadastrado");

@@ -2,13 +2,14 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import {
   deactivateOrgById,
   deleteOrgById,
-  getActiveOrgs,
   getOrgById,
+  getOrgs,
   registerOrganization,
   updateOrgById,
 } from "../services/organization.service.js";
 import type {
   CreateOrgInput,
+  ListOrgsQuery,
   UpdateOrgInput,
 } from "../schemas/organization.schema.js";
 import type { IdParamsSchema, VersionBody } from "../schemas/common.schema.js";
@@ -33,11 +34,13 @@ export async function getOrgByIdHandler(
   return reply.send(organization);
 }
 
-export async function getActiveOrgsHandler(
-  _request: FastifyRequest,
+export async function getOrgsHandler(
+  request: FastifyRequest<{ Querystring: ListOrgsQuery }>,
   reply: FastifyReply,
 ) {
-  const organizations = await getActiveOrgs();
+  const { active, contract } = request.query;
+
+  const organizations = await getOrgs(active, contract);
 
   return reply.send(organizations);
 }

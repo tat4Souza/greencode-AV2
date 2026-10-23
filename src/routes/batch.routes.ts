@@ -36,13 +36,15 @@ import {
 import { requireRole } from "../middlewares/auth.js";
 
 async function batchRoutes(server: FastifyInstance) {
-  const canWrite = { onRequest: [requireRole("ADMIN", "GESTOR")] };
+  server.addHook("onRequest", requireRole("ADMIN", "GESTOR"));
+  const batchesRoute = { tags: ["Batches"] };
 
   server.post<{ Body: CreateBatchInput }>(
     "/",
     {
-      ...canWrite,
       schema: {
+        ...batchesRoute,
+        summary: "Cria um novo lote",
         body: createBatchSchema,
         response: { 201: batchResponseSchema },
       },
@@ -54,6 +56,8 @@ async function batchRoutes(server: FastifyInstance) {
     "/",
     {
       schema: {
+        ...batchesRoute,
+        summary: "Lista os lotes (por padrão exibe os ativos)",
         querystring: listBatchesQuerySchema,
         response: { 200: z.array(batchListItemSchema) },
       },
@@ -65,6 +69,8 @@ async function batchRoutes(server: FastifyInstance) {
     "/:id",
     {
       schema: {
+        ...batchesRoute,
+        summary: "Exibe o lote com id correspondente",
         params: idParamsSchema,
         response: { 200: batchResponseSchema },
       },
@@ -75,8 +81,9 @@ async function batchRoutes(server: FastifyInstance) {
   server.put<{ Params: IdParamsSchema; Body: UpdateBatchInput }>(
     "/:id",
     {
-      ...canWrite,
       schema: {
+        ...batchesRoute,
+        summary: "Atualiza o lote com id correspondente",
         params: idParamsSchema,
         body: updateBatchSchema,
         response: { 200: batchResponseSchema },
@@ -88,8 +95,9 @@ async function batchRoutes(server: FastifyInstance) {
   server.patch<{ Params: IdParamsSchema; Body: UpdateBatchStatusInput }>(
     "/:id/status",
     {
-      ...canWrite,
       schema: {
+        ...batchesRoute,
+        summary: "Atualiza o status do lote com id correspondente",
         params: idParamsSchema,
         body: updateBatchStatusSchema,
         response: { 200: batchResponseSchema },
@@ -101,8 +109,9 @@ async function batchRoutes(server: FastifyInstance) {
   server.post<{ Params: IdParamsSchema; Body: CreateEquipmentInput }>(
     "/:id/equipments",
     {
-      ...canWrite,
       schema: {
+        ...batchesRoute,
+        summary: "Adiciona um equipamento para o lote com id correspondente",
         params: idParamsSchema,
         body: createEquipmentSchema,
         response: { 201: equipmentResponseSchema },
@@ -114,8 +123,9 @@ async function batchRoutes(server: FastifyInstance) {
   server.delete<{ Params: IdParamsSchema }>(
     "/:id",
     {
-      ...canWrite,
       schema: {
+        ...batchesRoute,
+        summary: "Deleta o lote com id correspondente",
         params: idParamsSchema,
       },
     },
@@ -124,7 +134,14 @@ async function batchRoutes(server: FastifyInstance) {
 
   server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
     "/:id/deactivate",
-    { schema: { params: idParamsSchema, body: versionBodySchema } },
+    {
+      schema: {
+        ...batchesRoute,
+        summary: "Inativa o lote com id correspondente",
+        params: idParamsSchema,
+        body: versionBodySchema,
+      },
+    },
     deactivateBatchHandler,
   );
 }

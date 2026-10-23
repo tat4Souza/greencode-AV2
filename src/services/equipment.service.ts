@@ -34,16 +34,14 @@ export async function registerEquipment(
 ) {
   const batch = await findBatchById(batchId);
   if (!batch) throw notFound("Lote");
+  if (!batch.active)
+    throw badRequest("Não é possível adicionar equipamentos a um lote inativo");
 
   if (batch.status === "ENCAMINHADO" || batch.status === "FINALIZADO") {
     throw badRequest(
       `Não é possível adicionar equipamentos a um lote ${batch.status}`,
     );
   }
-
-  const existing = await findExisting([batchId]);
-  if (existing.length > 0)
-    throw conflict(`Código de barras já cadastrado: ${existing.join(", ")}`);
 
   try {
     return await createEquipment({ ...input, batchId, createdById });
@@ -75,6 +73,8 @@ export async function updateEquipamentById(
   input: UpdateEquipmentInput,
 ) {
   const { version, ...changes } = input;
+  const equipment = await findEquipmentById(id);
+  if (!equipment) throw notFound("Equipamento");
 
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
@@ -82,8 +82,6 @@ export async function updateEquipamentById(
   try {
     const count = await updateEquipment(id, version, changes);
     if (count === 0) {
-      const exists = await findEquipmentById(id);
-      if (!exists) throw notFound("Equipamento");
       throw conflict(
         "Equipamento já foi alterado por outra pessoa. Recarregue os dados.",
       );

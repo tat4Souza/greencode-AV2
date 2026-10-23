@@ -1,10 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import {
-  barcodeParamsSchema,
   equipmentResponseSchema,
   listEquipmentsQuerySchema,
   updateEquipmentSchema,
-  type BarcodeParams,
   type ListEquipmentsQuery,
   type UpdateEquipmentInput,
 } from "../schemas/equipment.schema.js";
@@ -28,12 +26,15 @@ import {
 import movementRoutes from "./movement.routes.js";
 
 async function equipmentsRoutes(server: FastifyInstance) {
-  const canWrite = { onRequest: [requireRole("ADMIN", "GESTOR")] };
+  server.addHook("onRequest", requireRole("ADMIN", "GESTOR"));
+  const equipmentsRoute = { tags: ["Equipments"] };
 
   server.get<{ Querystring: ListEquipmentsQuery }>(
     "/",
     {
       schema: {
+        ...equipmentsRoute,
+        summary: "Lista os equipamentos",
         querystring: listEquipmentsQuerySchema,
         response: { 200: z.array(equipmentResponseSchema) },
       },
@@ -45,6 +46,8 @@ async function equipmentsRoutes(server: FastifyInstance) {
     "/:id",
     {
       schema: {
+        ...equipmentsRoute,
+        summary: "Exibe o equipamento com id correspondente",
         params: idParamsSchema,
         response: { 200: equipmentResponseSchema },
       },
@@ -55,8 +58,9 @@ async function equipmentsRoutes(server: FastifyInstance) {
   server.put<{ Params: IdParamsSchema; Body: UpdateEquipmentInput }>(
     "/:id",
     {
-      ...canWrite,
       schema: {
+        ...equipmentsRoute,
+        summary: "Atualiza o equipamento com id correspondente",
         params: idParamsSchema,
         body: updateEquipmentSchema,
         response: { 200: equipmentResponseSchema },
@@ -68,9 +72,9 @@ async function equipmentsRoutes(server: FastifyInstance) {
   server.patch<{ Params: IdParamsSchema; Body: ChangeEquipmentStateInput }>(
     "/:id/status",
     {
-      ...canWrite,
-      onRequest: [requireRole("ADMIN", "GESTOR")],
       schema: {
+        ...equipmentsRoute,
+        summary: "Atualiza o status do equipamento com id correspondente",
         params: idParamsSchema,
         body: changeEquipmentStateSchema,
         response: { 200: equipmentResponseSchema },
@@ -82,8 +86,9 @@ async function equipmentsRoutes(server: FastifyInstance) {
   server.delete<{ Params: IdParamsSchema }>(
     "/:id",
     {
-      ...canWrite,
       schema: {
+        ...equipmentsRoute,
+        summary: "Deleta o equipamento com id correspondente",
         params: idParamsSchema,
       },
     },

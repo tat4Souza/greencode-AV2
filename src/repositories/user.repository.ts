@@ -1,4 +1,5 @@
 import type { Prisma } from "../generated/prisma/client.js";
+import type { Role } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/prisma.js";
 import type {
   CreateUserInput,
@@ -14,6 +15,7 @@ const publicUserSelect = {
   updatedAt: true,
   version: true,
   createdBy: { select: { id: true, username: true } },
+  active: true,
 } satisfies Prisma.UserSelect;
 
 export function createUser(
@@ -36,8 +38,9 @@ export function findUserByEmail(email: string) {
   });
 }
 
-export function findUsers() {
+export function findUsers(filters: { role?: Role; active: boolean }) {
   return prisma.user.findMany({
+    where: filters,
     select: publicUserSelect,
   });
 }

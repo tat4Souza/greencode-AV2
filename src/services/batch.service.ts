@@ -50,18 +50,26 @@ export async function registerBatch(
   const org = await findOrgById(input.orgId);
   if (!org) throw notFound("Organização");
 
-  try {
-    const batch = await createBatch({ ...input, createdById });
-    return withTotalWeight(batch);
-  } catch (e) {
-    if (isPrismaError(e, "P2002"))
-      throw conflict("Código de barras já cadastrado");
-    throw e;
-  }
+  if (!org.active)
+    throw badRequest(
+      "Não é possível adicionar lotes a uma organização inativa",
+    );
+
+  if (!org.contract || org.contract.expiresAt <= new Date())
+    throw badRequest(
+      "Não é possível adicionar lotes a uma organização sem contrato válido",
+    );
+
+  const batch = await createBatch({ ...input, createdById });
+  return withTotalWeight(batch);
 }
 
-export function getAllBatches(orgId?: string, status?: BatchStatus) {
-  return findAllBatches({ orgId, status });
+export function getAllBatches(
+  orgId?: string,
+  status?: BatchStatus,
+  active: boolean = true,
+) {
+  return findAllBatches({ orgId, status, active });
 }
 
 export async function getBatchById(id: string) {
@@ -74,6 +82,8 @@ export async function getBatchById(id: string) {
 
 export async function updateBatchById(id: string, input: UpdateBatchInput) {
   const { version, ...changes } = input;
+  const batch = await findBatchById(id);
+  if (!batch) throw notFound("Lote");
 
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
@@ -83,8 +93,6 @@ export async function updateBatchById(id: string, input: UpdateBatchInput) {
   const count = await updateBatch(id, version, changes);
 
   if (count === 0) {
-    const exists = await findBatchById(id);
-    if (!exists) throw notFound("Lote");
     throw conflict(
       "Lote já foi alterado por outra pessoa. Recarregue os dados.",
     );

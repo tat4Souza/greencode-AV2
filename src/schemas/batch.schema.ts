@@ -13,6 +13,7 @@ import {
 export const listBatchesQuerySchema = z.object({
   orgId: z.uuid().optional(),
   status: z.enum(BatchStatus).optional(),
+  active: z.stringbool().optional(),
 });
 
 export const createBatchSchema = z.object({
@@ -38,6 +39,7 @@ export const batchResponseSchema = z.object({
   createdBy: z.object({ id: z.uuid(), username: z.string() }),
   equipments: z.array(equipmentResponseSchema),
   totalWeightKG: z.number(),
+  active: z.boolean(),
 });
 
 export const updateBatchSchema = createBatchSchema

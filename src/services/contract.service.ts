@@ -22,9 +22,13 @@ export async function registerContract(
 ) {
   const org = await findOrgById(orgId);
   if (!org) throw notFound("Organização");
+  if (!org.active)
+    throw badRequest(
+      "Não é possível adicionar contrato a uma organização inativa",
+    );
 
   if (input.expiresAt <= new Date()) {
-    throw badRequest("A data de vencimetno deve ser futura");
+    throw badRequest("A data de vencimento deve ser futura");
   }
 
   try {
@@ -53,6 +57,8 @@ export async function updateContractById(
   input: UpdateContractInput,
 ) {
   const { version, ...changes } = input;
+  const contract = await findContract(orgId);
+  if (!contract) throw notFound("Contrato");
 
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
@@ -64,8 +70,6 @@ export async function updateContractById(
   const count = await updateContract(orgId, version, changes);
 
   if (count === 0) {
-    const exists = await findContract(orgId);
-    if (!exists) throw notFound("Contrato");
     throw conflict(
       "Contrato já foi alterado por outra pessoa. Recarregue os dados.",
     );

@@ -23,6 +23,7 @@ export const publicBatchSelect = {
     select: publicEquipmentSelect,
     orderBy: { batchPosition: "asc" },
   },
+  active: true,
 } satisfies Prisma.BatchSelect;
 
 export const batchListSelect = {
@@ -45,8 +46,9 @@ export function createBatch(data: CreateBatchInput & { createdById: string }) {
       equipments: {
         create:
           equipments &&
-          equipments.map((e) => ({
+          equipments.map((e, index) => ({
             ...e,
+            batchPosition: index + 1,
             createdById: data.createdById,
           })),
       },
@@ -58,6 +60,7 @@ export function createBatch(data: CreateBatchInput & { createdById: string }) {
 export function findAllBatches(filters: {
   orgId?: string;
   status?: BatchStatus;
+  active: boolean;
 }) {
   return prisma.batch.findMany({
     select: batchListSelect,

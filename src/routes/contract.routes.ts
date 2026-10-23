@@ -19,13 +19,15 @@ import {
 import { requireRole } from "../middlewares/auth.js";
 
 async function contractRoutes(server: FastifyInstance) {
-  const canWrite = { onRequest: [requireRole("ADMIN", "OPERADOR")] };
+  server.addHook("onRequest", requireRole("ADMIN", "OPERADOR"));
+  const contractRoutes = { tags: ["Organizations | Contract"] };
 
   server.post<{ Params: IdParamsSchema; Body: CreateContractInput }>(
     "/",
     {
-      ...canWrite,
       schema: {
+        ...contractRoutes,
+        summary: "Cria um contrato para um organização ativa",
         params: idParamsSchema,
         body: contractSchema,
         response: { 201: contractResponseSchema },
@@ -38,6 +40,8 @@ async function contractRoutes(server: FastifyInstance) {
     "/",
     {
       schema: {
+        ...contractRoutes,
+        summary: "Lista os contratos",
         params: idParamsSchema,
         response: { 200: contractResponseSchema },
       },
@@ -48,8 +52,9 @@ async function contractRoutes(server: FastifyInstance) {
   server.put<{ Params: IdParamsSchema; Body: UpdateContractInput }>(
     "/",
     {
-      ...canWrite,
       schema: {
+        ...contractRoutes,
+        summary: "Atualiza o contrato da organização com id correspondente",
         params: idParamsSchema,
         body: updateContractSchema,
         response: { 200: contractResponseSchema },
@@ -61,8 +66,9 @@ async function contractRoutes(server: FastifyInstance) {
   server.delete<{ Params: IdParamsSchema }>(
     "/",
     {
-      ...canWrite,
       schema: {
+        ...contractRoutes,
+        summary: "Deleta o contrato da organização com id correspondente",
         params: idParamsSchema,
       },
     },

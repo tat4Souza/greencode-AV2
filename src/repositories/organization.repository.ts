@@ -1,8 +1,9 @@
 import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
-import type {
-  CreateOrgInput,
-  UpdateOrgInput,
+import {
+  type ContractFilter,
+  type CreateOrgInput,
+  type UpdateOrgInput,
 } from "../schemas/organization.schema.js";
 
 const publicOrganizationSelect = {
@@ -34,6 +35,7 @@ const publicOrganizationSelect = {
       version: true,
     },
   },
+  active: true,
 } satisfies Prisma.OrganizationSelect;
 
 export function createOrganization(
@@ -57,9 +59,31 @@ export function findOrgById(id: string) {
   });
 }
 
-export function findActiveOrgs() {
+function filterFindCommand(
+  filter?: ContractFilter,
+): Prisma.OrganizationWhereInput {
+  const now = new Date();
+
+  switch (filter) {
+    case "WITHOUT":
+      return { contract: { is: null } };
+    case "WITH":
+      return { contract: { isNot: null } };
+    case "VALID":
+      return { contract: { is: { expiresAt: { gt: now } } } };
+    case "EXPIRED":
+      return { contract: { is: { expiresAt: { lte: now } } } };
+    default:
+      return {};
+  }
+}
+
+export function findOrgs(filters: {
+  active: boolean;
+  contract?: ContractFilter;
+}) {
   return prisma.organization.findMany({
-    where: { contract: { expiresAt: { gt: new Date() } } },
+    where: { active: filters.active, ...filterFindCommand(filters.contract) },
     select: publicOrganizationSelect,
   });
 }

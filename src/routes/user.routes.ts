@@ -13,6 +13,7 @@ import {
   type CreateUserInput,
   type UpdateUserInput,
   userResponse,
+  listUsersQuerySchema,
 } from "../schemas/user.schema.js";
 import { requireRole } from "../middlewares/auth.js";
 import { z } from "zod";
@@ -25,11 +26,14 @@ import {
 
 async function userRoutes(server: FastifyInstance) {
   server.addHook("onRequest", requireRole("ADMIN"));
+  const userRoutes = { tags: ["Users"] };
 
   server.post<{ Body: CreateUserInput }>(
     "/",
     {
       schema: {
+        ...userRoutes,
+        summary: "Cria um novo usuário",
         body: createUserSchema,
         response: { 201: userResponse },
       },
@@ -40,7 +44,12 @@ async function userRoutes(server: FastifyInstance) {
   server.get(
     "/",
     {
-      schema: { response: { 200: z.array(userResponse) } },
+      schema: {
+        ...userRoutes,
+        summary: "Lista os usuários (por padrão exibe os ativos)",
+        querystring: listUsersQuerySchema,
+        response: { 200: z.array(userResponse) },
+      },
     },
     getUsersHandler,
   );
@@ -49,6 +58,8 @@ async function userRoutes(server: FastifyInstance) {
     "/:id",
     {
       schema: {
+        ...userRoutes,
+        summary: "Exibe o usuário com id correspondente",
         params: idParamsSchema,
         response: { 200: userResponse },
       },
@@ -60,6 +71,8 @@ async function userRoutes(server: FastifyInstance) {
     "/:id",
     {
       schema: {
+        ...userRoutes,
+        summary: "Atualiza o usuário com id correspondente",
         params: idParamsSchema,
         body: updateUserSchema,
         response: { 200: userResponse },
@@ -72,6 +85,8 @@ async function userRoutes(server: FastifyInstance) {
     "/:id",
     {
       schema: {
+        ...userRoutes,
+        summary: "Deleta o usuário com o id correspondente",
         params: idParamsSchema,
       },
     },
@@ -80,7 +95,14 @@ async function userRoutes(server: FastifyInstance) {
 
   server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
     "/:id/deactivate",
-    { schema: { params: idParamsSchema, body: versionBodySchema } },
+    {
+      schema: {
+        ...userRoutes,
+        summary: "Inativa o usuário com o id correspondente",
+        params: idParamsSchema,
+        body: versionBodySchema,
+      },
+    },
     deactivateUserHandler,
   );
 }

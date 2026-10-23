@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Role } from "../generated/prisma/enums.js";
 
 const userCore = {
   email: z.email({
@@ -38,12 +39,19 @@ export const userResponse = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   version: z.number(),
+  active: z.boolean(),
 });
 
 export const updateUserSchema = createUserSchema
   .partial()
+  .omit({ password: true })
   .extend({ version: z.number().int().min(0) });
 
-export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export const listUsersQuerySchema = z.object({
+  role: z.enum(Role).optional(),
+  active: z.stringbool().optional(),
+});
 
+export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;

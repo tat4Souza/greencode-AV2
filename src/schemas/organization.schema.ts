@@ -18,6 +18,7 @@ export const createOrgSchema = z.object({
   cep: z
     .string()
     .trim()
+    .min(1, "CEP é obrigatório")
     .regex(/^\d{5}-?\d{3}$/, {
       message: "CEP inválido. Use o formato 00000-000",
     }),
@@ -56,16 +57,25 @@ export const createOrgSchema = z.object({
       "SE",
       "TO",
     ],
-    { error: "Não é uma UF válida" },
+    {
+      error: (issue) =>
+        issue.input === undefined
+          ? "UF é obrigatório"
+          : "Precisa ser uma UF válida",
+    },
   ),
   contract: z
     .object({
-      expiresAt: z.coerce.date(),
+      expiresAt: z.coerce
+        .date("Precisa ser uma data válida")
+        .min(1, "Data de vencimento do contrato é obrigatória"),
       clauses: z
         .array(
           z.object({
-            title: z.string().min(1),
-            description: z.string().min(1),
+            title: z.string().min(1, "Título do contrato é obrigatório"),
+            description: z
+              .string()
+              .min(1, "Descrição do contrato é obrigatória"),
           }),
         )
         .min(1, "Informe ao menos uma cláusula"),
@@ -92,6 +102,12 @@ export const orgResponseSchema = z.object({
   createdBy: z.object({ id: z.uuid(), username: z.string() }),
   createdAt: z.date(),
   updatedAt: z.date(),
+  // updatedBy: z
+  //   .object({
+  //     id: z.uuid(),
+  //     username: z.string(),
+  //   })
+  //   .nullable(),
   version: z.number().int(),
   contract: z
     .object({
@@ -106,12 +122,23 @@ export const orgResponseSchema = z.object({
       version: z.number().int(),
     })
     .nullable(),
+  active: z.boolean(),
 });
 
 export const updateOrgSchema = createOrgSchema
   .omit({ contract: true })
   .partial()
   .extend({ version: z.number().int().min(0) });
+
+export const contractFilters = ["WITH", "WITHOUT", "VALID", "EXPIRED"] as const;
+export type ContractFilter = (typeof contractFilters)[number];
+
+export const listOrgsQuerySchema = z.object({
+  contract: z.enum(contractFilters).optional(),
+  active: z.stringbool().optional(),
+});
+
+export type ListOrgsQuery = z.infer<typeof listOrgsQuerySchema>;
 
 export type UpdateOrgInput = z.infer<typeof updateOrgSchema>;
 export type CreateOrgInput = z.infer<typeof createOrgSchema>;
