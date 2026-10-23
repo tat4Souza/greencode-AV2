@@ -9,6 +9,7 @@ export const createEquipmentSchema = z.object({
   type: z.enum(EquipmentType),
   brand: z.string().min(1),
   model: z.string().min(1),
+  status: z.enum(TrackingStatus),
   manufacturingYear: z.int().min(1970).max(new Date().getFullYear()),
   physicalState: z.enum(PhysicalState),
   weightKG: z.number().positive(),

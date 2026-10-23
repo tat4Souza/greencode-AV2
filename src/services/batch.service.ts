@@ -5,7 +5,10 @@ import {
   isPrismaError,
   notFound,
 } from "../lib/errors.js";
-import { assertValidEnteredAt, findDuplicates } from "../lib/validators.js";
+import {
+  assertBatchStatusRules,
+  assertValidEnteredAt,
+} from "../lib/validators.js";
 import {
   createBatch,
   deactivateBatch,
@@ -43,8 +46,6 @@ export async function registerBatch(
   input: CreateBatchInput,
   createdById: string,
 ) {
-  const equipments = input.equipments ?? [];
-
   assertValidEnteredAt(input.enteredAt);
 
   const org = await findOrgById(input.orgId);
@@ -85,10 +86,16 @@ export async function updateBatchById(id: string, input: UpdateBatchInput) {
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
 
+  if (!batch.active) {
+    throw badRequest("Não é possível atualizar um lote inativo");
+  }
+
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
 
-  assertValidEnteredAt(changes.enteredAt);
+  if (changes.enteredAt) {
+    assertValidEnteredAt(changes.enteredAt);
+  }
 
   const count = await updateBatch(id, version, changes);
 
@@ -108,6 +115,15 @@ export async function updateBatchByStatus(
 ) {
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
+
+  if (!batch.active) {
+    throw badRequest("Não é possível alterar o status de um lote inativo");
+  }
+
+  const equipments = batch.equipments;
+  const statusEqMap = equipments.map((eq) => ({ status: eq.status }));
+
+  assertBatchStatusRules(statusEqMap, status);
 
   if (!transitions[batch.status].includes(status)) {
     throw badRequest(`Não é possível mudar de ${batch.status} para ${status}`);

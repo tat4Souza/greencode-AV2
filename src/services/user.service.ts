@@ -61,6 +61,9 @@ export async function updateUserById(id: string, input: UpdateUserInput) {
   const curUser = await findUserById(id);
   if (!curUser) throw notFound("Usuário");
 
+  if (!curUser.active)
+    throw badRequest("Não é possível atualizar um usuário inativo");
+
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
 

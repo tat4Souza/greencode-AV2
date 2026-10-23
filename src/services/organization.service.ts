@@ -56,6 +56,9 @@ export async function updateOrgById(id: string, input: UpdateOrgInput) {
   const curOrg = await findOrgById(id);
   if (!curOrg) throw notFound("Organização");
 
+  if (!curOrg.active)
+    throw badRequest("Não é possível atualizar uma organização inativa");
+
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
 

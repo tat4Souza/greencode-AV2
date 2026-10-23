@@ -1,16 +1,6 @@
-import type {
-  PhysicalState,
-  TrackingStatus,
-} from "../generated/prisma/enums.js";
-import {
-  badRequest,
-  conflict,
-  isPrismaError,
-  notFound,
-} from "../lib/errors.js";
+import { isPrismaError, notFound } from "../lib/errors.js";
 import { findEquipmentById } from "../repositories/equipment.repository.js";
 import {
-  applyMovement,
   deleteMovement,
   findMovementsByEquipment,
 } from "../repositories/movement.repository.js";

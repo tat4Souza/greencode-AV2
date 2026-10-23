@@ -22,7 +22,7 @@ export const createBatchSchema = z.object({
   invoice: z.string().min(1),
   carrier: z.string().min(1),
   obs: z.string().optional(),
-  equipments: z.array(createEquipmentSchema).optional(),
+  equipments: z.array(createEquipmentSchema.omit({ status: true })).optional(),
 });
 
 export const batchResponseSchema = z.object({

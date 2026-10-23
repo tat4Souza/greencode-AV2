@@ -9,6 +9,7 @@ import {
   isPrismaError,
   notFound,
 } from "../lib/errors.js";
+import { assertBatchStatusRules } from "../lib/validators.js";
 import {
   findBatchById,
   findExisting,
@@ -37,9 +38,9 @@ export async function registerEquipment(
   if (!batch.active)
     throw badRequest("Não é possível adicionar equipamentos a um lote inativo");
 
-  if (batch.status === "ENCAMINHADO" || batch.status === "FINALIZADO") {
+  if (batch.status !== "RECEBIDO" && batch.status !== "EM_TRIAGEM") {
     throw badRequest(
-      `Não é possível adicionar equipamentos a um lote ${batch.status}`,
+      `Não é possível adicionar novos equipamentos a um lote que já está em status '${batch.status}'`,
     );
   }
 
@@ -75,6 +76,13 @@ export async function updateEquipamentById(
   const { version, ...changes } = input;
   const equipment = await findEquipmentById(id);
   if (!equipment) throw notFound("Equipamento");
+
+  const batch = await findBatchById(equipment.batchId);
+  if (!batch || !batch.active) {
+    throw badRequest(
+      "Não é possível atualizar um equipamento de um lote inativo ou inexistente",
+    );
+  }
 
   if (Object.keys(changes).length === 0)
     throw badRequest("É necessário passar o conteúdo a ser editado");
@@ -126,6 +134,21 @@ export async function changeEquipmentState(
 ) {
   const equipment = await findEquipmentById(equipmentId);
   if (!equipment) throw notFound("Equipamento");
+
+  const batch = await findBatchById(equipment.batchId);
+  if (!batch) throw notFound("Lote");
+
+  if (!batch.active) {
+    throw badRequest(
+      "Não é possível alterar o estado de equipamentos de um lote inativo",
+    );
+  }
+
+  if (batch.status === "FINALIZADO") {
+    throw badRequest(
+      "Não é possível alterar o estado de equipamentos de um lote já finalizado",
+    );
+  }
 
   const { version, status, physicalState, ...rest } = input;
 
