@@ -12,12 +12,20 @@ const publicContractSelect = {
   clauses: true,
   monthlyValue: true,
   autoRenewal: true,
+  createdBy: { select: { id: true, username: true } },
+  createdAt: true,
+  updatedBy: { select: { id: true, username: true } },
+  updatedAt: true,
   version: true,
 } satisfies Prisma.ContractSelect;
 
-export function createContract(orgId: string, input: CreateContractInput) {
+export function createContract(
+  orgId: string,
+  input: CreateContractInput,
+  createdById: string,
+) {
   return prisma.contract.create({
-    data: { orgId, ...input },
+    data: { orgId, ...input, createdById },
     select: publicContractSelect,
   });
 }
@@ -33,10 +41,11 @@ export async function updateContract(
   orgId: string,
   version: number,
   data: Omit<UpdateContractInput, "version">,
+  updatedById: string,
 ) {
   const result = await prisma.contract.updateMany({
     where: { orgId, version },
-    data: { ...data, version: { increment: 1 } },
+    data: { ...data, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }

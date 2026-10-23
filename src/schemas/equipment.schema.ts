@@ -26,10 +26,11 @@ export const equipmentResponseSchema = z.object({
   weightKG: z.coerce.number(),
   batchPosition: z.number().int(),
   status: z.enum(TrackingStatus),
+  createdBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
   createdAt: z.date(),
-  updatedAt: z.date(),
-  version: z.number().int(),
-  createdBy: z.object({ id: z.uuid(), username: z.string() }),
+  updatedBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+  updatedAt: z.date().nullable(),
+  version: z.number(),
 });
 
 export const updateEquipmentSchema = createEquipmentSchema

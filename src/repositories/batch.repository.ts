@@ -80,10 +80,11 @@ export async function updateBatch(
   id: string,
   version: number,
   data: Omit<UpdateBatchInput, "version">,
+  updatedById: string,
 ) {
   const result = await prisma.batch.updateMany({
     where: { id, version },
-    data: { ...data, version: { increment: 1 } },
+    data: { ...data, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }
@@ -92,10 +93,11 @@ export async function updateBatchStatus(
   id: string,
   version: number,
   status: BatchStatus,
+  updatedById: string,
 ) {
   const result = await prisma.batch.updateMany({
     where: { id, version },
-    data: { status, version: { increment: 1 } },
+    data: { status, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }
@@ -119,10 +121,11 @@ export async function updateBatchActiveStatus(
   id: string,
   version: number,
   value: boolean,
+  updatedById: string,
 ) {
   const result = await prisma.batch.updateMany({
     where: { id, version, active: true },
-    data: { active: false, version: { increment: 1 } },
+    data: { active: false, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }

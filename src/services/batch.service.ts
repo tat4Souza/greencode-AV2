@@ -81,7 +81,11 @@ export async function getBatchById(id: string) {
   return withTotalWeight(batch);
 }
 
-export async function updateBatchById(id: string, input: UpdateBatchInput) {
+export async function updateBatchById(
+  id: string,
+  input: UpdateBatchInput,
+  updatedBy: string,
+) {
   const { version, ...changes } = input;
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
@@ -97,7 +101,7 @@ export async function updateBatchById(id: string, input: UpdateBatchInput) {
     assertValidEnteredAt(changes.enteredAt);
   }
 
-  const count = await updateBatch(id, version, changes);
+  const count = await updateBatch(id, version, changes, updatedBy);
 
   if (count === 0) {
     throw conflict(
@@ -112,6 +116,7 @@ export async function updateBatchByStatus(
   id: string,
   version: number,
   status: BatchStatus,
+  updatedBy: string,
 ) {
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
@@ -129,14 +134,18 @@ export async function updateBatchByStatus(
     throw badRequest(`Não é possível mudar de ${batch.status} para ${status}`);
   }
 
-  const count = await updateBatchStatus(id, version, status);
+  const count = await updateBatchStatus(id, version, status, updatedBy);
   if (count === 0)
     throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados.");
 
   return getBatchById(id);
 }
 
-export async function deactivateBatchById(id: string, version: number) {
+export async function deactivateBatchById(
+  id: string,
+  version: number,
+  updatedBy: string,
+) {
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
 
@@ -144,12 +153,16 @@ export async function deactivateBatchById(id: string, version: number) {
     throw badRequest("Este lote já está inativo");
   }
 
-  const count = await updateBatchActiveStatus(id, version, false);
+  const count = await updateBatchActiveStatus(id, version, false, updatedBy);
   if (count === 0)
     throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados");
 }
 
-export async function reactivateBatchById(id: string, version: number) {
+export async function reactivateBatchById(
+  id: string,
+  version: number,
+  updatedBy: string,
+) {
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
 
@@ -157,7 +170,7 @@ export async function reactivateBatchById(id: string, version: number) {
     throw badRequest("Este lote já está ativo");
   }
 
-  const count = await updateBatchActiveStatus(id, version, true);
+  const count = await updateBatchActiveStatus(id, version, true, updatedBy);
   if (count === 0) {
     throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados");
   }

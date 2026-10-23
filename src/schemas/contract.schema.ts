@@ -22,7 +22,11 @@ export const contractResponseSchema = z
     clauses: z.array(z.object({ title: z.string(), description: z.string() })),
     monthlyValue: z.coerce.number(),
     autoRenewal: z.boolean(),
-    version: z.number().int(),
+    createdBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+    createdAt: z.date(),
+    updatedBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+    updatedAt: z.date().nullable(),
+    version: z.number(),
   })
   .nullable();
 

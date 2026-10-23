@@ -49,7 +49,11 @@ export async function updateUserHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: UpdateUserInput }>,
   reply: FastifyReply,
 ) {
-  const user = await updateUserById(request.params.id, request.body);
+  const user = await updateUserById(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
 
   return reply.send(user);
 }
@@ -73,7 +77,11 @@ export async function deactivateUserHandler(
     throw forbidden("Você não pode inativar a si mesmo");
   }
 
-  await deactivateUserById(request.params.id, request.body.version);
+  await deactivateUserById(
+    request.params.id,
+    request.body.version,
+    request.user.id,
+  );
   return reply.code(204).send();
 }
 
@@ -81,6 +89,10 @@ export async function reactivateUserHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
   reply: FastifyReply,
 ) {
-  await reactivateUserById(request.params.id, request.body.version);
+  await reactivateUserById(
+    request.params.id,
+    request.body.version,
+    request.user.id,
+  );
   return reply.code(204).send();
 }

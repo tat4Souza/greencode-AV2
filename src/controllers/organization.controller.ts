@@ -50,7 +50,11 @@ export async function updateOrgByIdHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: UpdateOrgInput }>,
   reply: FastifyReply,
 ) {
-  const organization = await updateOrgById(request.params.id, request.body);
+  const organization = await updateOrgById(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
   return reply.send(organization);
 }
 
@@ -66,7 +70,11 @@ export async function deactivateOrgHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
   reply: FastifyReply,
 ) {
-  await deactivateOrgById(request.params.id, request.body.version);
+  await deactivateOrgById(
+    request.params.id,
+    request.body.version,
+    request.user.id,
+  );
   return reply.code(204).send();
 }
 
@@ -74,6 +82,10 @@ export async function reactivateOrgHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
   reply: FastifyReply,
 ) {
-  await reactivateOrgById(request.params.id, request.body.version);
+  await reactivateOrgById(
+    request.params.id,
+    request.body.version,
+    request.user.id,
+  );
   return reply.code(204).send();
 }

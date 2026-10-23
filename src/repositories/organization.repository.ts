@@ -20,10 +20,6 @@ const publicOrganizationSelect = {
   neighbourhood: true,
   city: true,
   uf: true,
-  createdAt: true,
-  updatedAt: true,
-  version: true,
-  createdBy: { select: { id: true, username: true } },
   contract: {
     select: {
       id: true,
@@ -32,9 +28,18 @@ const publicOrganizationSelect = {
       clauses: true,
       monthlyValue: true,
       autoRenewal: true,
+      createdBy: { select: { id: true, username: true } },
+      createdAt: true,
+      updatedBy: { select: { id: true, username: true } },
+      updatedAt: true,
       version: true,
     },
   },
+  createdBy: { select: { id: true, username: true } },
+  createdAt: true,
+  updatedBy: { select: { id: true, username: true } },
+  updatedAt: true,
+  version: true,
   active: true,
 } satisfies Prisma.OrganizationSelect;
 
@@ -46,7 +51,11 @@ export function createOrganization(
   return prisma.organization.create({
     data: {
       ...orgData,
-      ...(contract && { contract: { create: contract } }),
+      ...(contract && {
+        contract: {
+          create: { ...contract, createdById: orgData.createdById },
+        },
+      }),
     },
     select: publicOrganizationSelect,
   });
@@ -92,10 +101,11 @@ export async function updateOrganization(
   id: string,
   version: number,
   data: Omit<UpdateOrgInput, "version">,
+  updatedById: string,
 ) {
   const result = await prisma.organization.updateMany({
     where: { id, version },
-    data: { ...data, version: { increment: 1 } },
+    data: { ...data, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }
@@ -111,18 +121,19 @@ export async function updateOrganizationActiveStatus(
   id: string,
   version: number,
   value: boolean,
+  updatedById: string,
 ) {
   return prisma.$transaction(async (tx) => {
     const result = await tx.organization.updateMany({
       where: { id, version, active: !value },
-      data: { active: value, version: { increment: 1 } },
+      data: { active: value, version: { increment: 1 }, updatedById },
     });
 
     if (result.count === 0) return 0;
 
     await tx.batch.updateMany({
       where: { orgId: id, active: !value },
-      data: { active: value, version: { increment: 1 } },
+      data: { active: value, version: { increment: 1 }, updatedById },
     });
 
     return result.count;

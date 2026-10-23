@@ -1,6 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type {
-  BarcodeParams,
   CreateEquipmentInput,
   ListEquipmentsQuery,
   UpdateEquipmentInput,
@@ -58,7 +57,11 @@ export async function updateEquipmentByIdHandler(
   }>,
   reply: FastifyReply,
 ) {
-  const equipment = await updateEquipamentById(request.params.id, request.body);
+  const equipment = await updateEquipamentById(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
   return reply.send(equipment);
 }
 

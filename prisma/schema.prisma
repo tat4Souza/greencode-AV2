@@ -70,20 +70,28 @@ model User {
   email        String   @unique @map("us_email")
   passwordHash String   @map("us_senha_hash")
   role         Role     @default(AUDITOR) @map("us_papel")
-  createdById  String?   @map("us_criado_por") @db.Uuid
+  createdById  String?  @map("us_criado_por") @db.Uuid
   createdAt    DateTime @default(now()) @map("us_criado_em")
+  updatedById  String?  @map("us_atualizado_por") @db.Uuid
   updatedAt    DateTime @updatedAt @map("us_atualizado_em")
   active       Boolean  @default(true) @map("us_ativo")
   version      Int      @default(0) @map("us_versao_otimista")
   tokenVersion Int      @default(0) @map("us_versao_token")
 
-  organizations Organization[]
-  batches       Batch[]
-  equipments    Equipment[]
-  movements     Movement[]
+  createdBy    User?  @relation("UserCreatedBy", fields: [createdById], references: [id])
+  updatedBy    User?  @relation("UserUpdatedBy", fields: [updatedById], references: [id])
+  createdUsers User[] @relation("UserCreatedBy")
+  updatedUsers User[] @relation("UserUpdatedBy")
 
-  createdBy     User?   @relation("UserCreatedBy", fields: [createdById], references: [id])
-  createdUsers  User[]  @relation("UserCreatedBy")
+  createdOrganizations Organization[] @relation("OrganizationCreatedBy")
+  updatedOrganizations Organization[] @relation("OrganizationUpdatedBy")
+  createdContracts     Contract[]     @relation("ContractCreatedBy")
+  updatedContracts     Contract[]     @relation("ContractUpdatedBy")
+  createdBatches       Batch[]        @relation("BatchCreatedBy")
+  updatedBatches       Batch[]        @relation("BatchUpdatedBy")
+  createdEquipments    Equipment[]    @relation("EquipmentCreatedBy")
+  updatedEquipments    Equipment[]    @relation("EquipmentUpdatedBy")
+  movements            Movement[]
 
   @@map("usuario")
 }
@@ -104,11 +112,13 @@ model Organization {
   uf                String   @map("org_estado") @db.Char(2)
   createdById       String   @map("org_criado_por") @db.Uuid
   createdAt         DateTime @default(now()) @map("org_criado_em")
+  updatedById       String?  @map("org_atualizado_por") @db.Uuid
   updatedAt         DateTime @updatedAt @map("org_atualizado_em")
-  active Boolean @default(true) @map("org_ativo")
+  active            Boolean  @default(true) @map("org_ativo")
   version           Int      @default(0) @map("org_versao_otimista")
 
-  createdBy User      @relation(fields: [createdById], references: [id])
+  createdBy User      @relation("OrganizationCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?     @relation("OrganizationUpdatedBy", fields: [updatedById], references: [id])
   contract  Contract?
   batches   Batch[]
 
@@ -124,10 +134,17 @@ model Contract {
   clauses      Json     @map("cont_clausulas")
   monthlyValue Decimal  @map("cont_valor_mensal") @db.Decimal(12, 2)
   autoRenewal  Boolean  @default(false) @map("cont_renovacao_automatica")
+  createdById  String   @map("cont_criado_por") @db.Uuid
+  createdAt    DateTime @default(now()) @map("cont_criado_em")
+  updatedById  String?  @map("cont_atualizado_por") @db.Uuid
+  updatedAt    DateTime @updatedAt @map("cont_atualizado_em")
   version      Int      @default(0) @map("cont_versao_otimista")
 
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy User         @relation("ContractCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?        @relation("ContractUpdatedBy", fields: [updatedById], references: [id])
 
+  @@index([createdById])
   @@map("contrato")
 }
 
@@ -141,12 +158,14 @@ model Batch {
   obs         String?     @map("lote_observacoes")
   createdById String      @map("lote_criado_por") @db.Uuid
   createdAt   DateTime    @default(now()) @map("lote_criado_em")
+  updatedById String?     @map("lote_atualizado_por") @db.Uuid
   updatedAt   DateTime    @updatedAt @map("lote_atualizado_em")
-  active Boolean @default(true) @map("lote_ativo")
+  active      Boolean     @default(true) @map("lote_ativo")
   version     Int         @default(0) @map("lote_versao_otimista")
 
   org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  createdBy  User         @relation(fields: [createdById], references: [id])
+  createdBy  User         @relation("BatchCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?        @relation("BatchUpdatedBy", fields: [updatedById], references: [id])
   equipments Equipment[]
 
   @@index([orgId])
@@ -167,10 +186,12 @@ model Equipment {
   status            TrackingStatus @default(AGUARDANDO_TRIAGEM) @map("equi_status")
   createdById       String         @map("equi_criado_por") @db.Uuid
   createdAt         DateTime       @default(now()) @map("equi_criado_em")
+  updatedById       String?        @map("equi_atualizado_por") @db.Uuid
   updatedAt         DateTime       @updatedAt @map("equi_atualizado_em")
   version           Int            @default(0) @map("equi_versao_otimista")
 
-  createdBy User       @relation(fields: [createdById], references: [id])
+  createdBy User       @relation("EquipmentCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?      @relation("EquipmentUpdatedBy", fields: [updatedById], references: [id])
   batch     Batch      @relation(fields: [batchId], references: [id], onDelete: Cascade)
   movements Movement[]
 

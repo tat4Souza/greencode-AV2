@@ -32,13 +32,14 @@ export const batchResponseSchema = z.object({
   carrier: z.string(),
   obs: z.string().nullable(),
   status: z.enum(BatchStatus),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  version: z.number().int(),
   org: z.object({ id: z.uuid(), name: z.string(), cnpj: z.string() }),
-  createdBy: z.object({ id: z.uuid(), username: z.string() }),
   equipments: z.array(equipmentResponseSchema),
   totalWeightKG: z.number(),
+  createdBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+  createdAt: z.date(),
+  updatedBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+  updatedAt: z.date().nullable(),
+  version: z.number().int(),
   active: z.boolean(),
 });
 

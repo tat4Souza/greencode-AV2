@@ -99,16 +99,6 @@ export const orgResponseSchema = z.object({
   neighbourhood: z.string(),
   city: z.string(),
   uf: z.string(),
-  createdBy: z.object({ id: z.uuid(), username: z.string() }),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  // updatedBy: z
-  //   .object({
-  //     id: z.uuid(),
-  //     username: z.string(),
-  //   })
-  //   .nullable(),
-  version: z.number().int(),
   contract: z
     .object({
       id: z.uuid(),
@@ -119,9 +109,19 @@ export const orgResponseSchema = z.object({
       ),
       monthlyValue: z.coerce.number(),
       autoRenewal: z.boolean(),
-      version: z.number().int(),
+      version: z.number(),
     })
     .nullable(),
+  createdBy: z.object({ id: z.uuid(), username: z.string() }),
+  createdAt: z.date(),
+  updatedBy: z
+    .object({
+      id: z.uuid(),
+      username: z.string(),
+    })
+    .nullable(),
+  updatedAt: z.date().nullable(),
+  version: z.number(),
   active: z.boolean(),
 });
 

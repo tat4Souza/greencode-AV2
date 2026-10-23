@@ -18,7 +18,11 @@ export async function registerContractHandler(
   }>,
   reply: FastifyReply,
 ) {
-  const contract = await registerContract(request.params.id, request.body);
+  const contract = await registerContract(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
   return reply.code(201).send(contract);
 }
 
@@ -37,7 +41,11 @@ export async function updateContractHandler(
   }>,
   reply: FastifyReply,
 ) {
-  const contract = await updateContractById(request.params.id, request.body);
+  const contract = await updateContractById(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
   return reply.send(contract);
 }
 

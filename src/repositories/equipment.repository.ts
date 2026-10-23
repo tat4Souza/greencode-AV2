@@ -20,10 +20,11 @@ export const publicEquipmentSelect = {
   weightKG: true,
   batchPosition: true,
   status: true,
+  createdBy: { select: { id: true, username: true } },
   createdAt: true,
+  updatedBy: { select: { id: true, username: true } },
   updatedAt: true,
   version: true,
-  createdBy: { select: { id: true, username: true } },
 } satisfies Prisma.EquipmentSelect;
 
 export function createEquipment(
@@ -69,10 +70,11 @@ export async function updateEquipment(
   id: string,
   version: number,
   data: Omit<UpdateEquipmentInput, "version">,
+  updatedById: string,
 ) {
   const result = await prisma.equipment.updateMany({
     where: { id, version },
-    data: { ...data, version: { increment: 1 } },
+    data: { ...data, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }

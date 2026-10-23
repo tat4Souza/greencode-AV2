@@ -51,7 +51,11 @@ export async function getOrgs(
   return findOrgs({ active, contract });
 }
 
-export async function updateOrgById(id: string, input: UpdateOrgInput) {
+export async function updateOrgById(
+  id: string,
+  input: UpdateOrgInput,
+  updatedBy: string,
+) {
   const { version, ...changes } = input;
   const curOrg = await findOrgById(id);
   if (!curOrg) throw notFound("Organização");
@@ -63,7 +67,7 @@ export async function updateOrgById(id: string, input: UpdateOrgInput) {
     throw badRequest("É necessário passar o conteúdo a ser editado");
 
   try {
-    const count = await updateOrganization(id, version, changes);
+    const count = await updateOrganization(id, version, changes, updatedBy);
 
     if (count === 0) {
       throw conflict(
@@ -78,26 +82,44 @@ export async function updateOrgById(id: string, input: UpdateOrgInput) {
   }
 }
 
-export async function deactivateOrgById(id: string, version: number) {
+export async function deactivateOrgById(
+  id: string,
+  version: number,
+  updatedBy: string,
+) {
   const org = await findOrgById(id);
   if (!org) throw notFound("Organização");
 
   if (!org.active) throw badRequest("Está organização já está inativa");
 
-  const count = await updateOrganizationActiveStatus(id, version, false);
+  const count = await updateOrganizationActiveStatus(
+    id,
+    version,
+    false,
+    updatedBy,
+  );
   if (count === 0)
     throw conflict(
       "Organização foi alterada por outra pessoa. Recarregue os dados",
     );
 }
 
-export async function reactivateOrgById(id: string, version: number) {
+export async function reactivateOrgById(
+  id: string,
+  version: number,
+  updatedBy: string,
+) {
   const org = await findOrgById(id);
   if (!org) throw notFound("Organização");
 
   if (org.active) throw badRequest("Esta organização já está ativa");
 
-  const count = await updateOrganizationActiveStatus(id, version, true);
+  const count = await updateOrganizationActiveStatus(
+    id,
+    version,
+    true,
+    updatedBy,
+  );
   if (count === 0)
     throw conflict(
       "Organização foi alterada por outra pessoa. Recarregue os dados",

@@ -72,6 +72,7 @@ export async function getEquipmentById(id: string) {
 export async function updateEquipamentById(
   id: string,
   input: UpdateEquipmentInput,
+  updatedBy: string,
 ) {
   const { version, ...changes } = input;
   const equipment = await findEquipmentById(id);
@@ -88,7 +89,7 @@ export async function updateEquipamentById(
     throw badRequest("É necessário passar o conteúdo a ser editado");
 
   try {
-    const count = await updateEquipment(id, version, changes);
+    const count = await updateEquipment(id, version, changes, updatedBy);
     if (count === 0) {
       throw conflict(
         "Equipamento já foi alterado por outra pessoa. Recarregue os dados.",

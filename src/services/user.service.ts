@@ -56,7 +56,11 @@ export async function getUserById(id: string) {
   return user;
 }
 
-export async function updateUserById(id: string, input: UpdateUserInput) {
+export async function updateUserById(
+  id: string,
+  input: UpdateUserInput,
+  updatedBy: string,
+) {
   const { version, ...changes } = input;
   const curUser = await findUserById(id);
   if (!curUser) throw notFound("Usuário");
@@ -76,7 +80,7 @@ export async function updateUserById(id: string, input: UpdateUserInput) {
       assertNotLastAdmin(changes.role);
     }
 
-    const count = await updateUser(id, version, { ...changes });
+    const count = await updateUser(id, version, updatedBy, { ...changes });
 
     if (count === 0) {
       throw conflict(
@@ -98,7 +102,11 @@ export async function updateUserById(id: string, input: UpdateUserInput) {
   }
 }
 
-export async function deactivateUserById(id: string, version: number) {
+export async function deactivateUserById(
+  id: string,
+  version: number,
+  updatedBy: string,
+) {
   const user = await findUserById(id);
   if (!user) throw notFound("Usuário");
 
@@ -106,20 +114,24 @@ export async function deactivateUserById(id: string, version: number) {
 
   await assertNotLastAdmin(user.role);
 
-  const count = await updateUserActiveStatus(id, version, false);
+  const count = await updateUserActiveStatus(id, version, false, updatedBy);
   if (count === 0)
     throw conflict(
       "Usuário foi alterado por outra pessoa. Recarregue os dados",
     );
 }
 
-export async function reactivateUserById(id: string, version: number) {
+export async function reactivateUserById(
+  id: string,
+  version: number,
+  updatedBy: string,
+) {
   const user = await findUserById(id);
   if (!user) throw notFound("Usuário");
 
   if (user.active) throw badRequest("Este usuário já está ativo");
 
-  const count = await updateUserActiveStatus(id, version, true);
+  const count = await updateUserActiveStatus(id, version, true, updatedBy);
   if (count === 0)
     throw conflict(
       "Usuário foi alterado por outra pessoa. Recarregue os dados",

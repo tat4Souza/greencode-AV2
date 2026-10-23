@@ -37,7 +37,8 @@ export const userResponse = z.object({
   ...userCore,
   createdBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
   createdAt: z.date(),
-  updatedAt: z.date(),
+  updatedBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+  updatedAt: z.date().nullable(),
   version: z.number(),
   active: z.boolean(),
 });

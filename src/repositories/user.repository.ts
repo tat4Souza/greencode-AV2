@@ -15,6 +15,7 @@ const publicUserSelect = {
   updatedAt: true,
   version: true,
   createdBy: { select: { id: true, username: true } },
+  updatedBy: { select: { id: true, username: true } },
   active: true,
 } satisfies Prisma.UserSelect;
 
@@ -55,13 +56,14 @@ export function findUserById(id: string) {
 export async function updateUser(
   id: string,
   version: number,
+  updatedById: string,
   data: Omit<UpdateUserInput, "password" | "version"> & {
     passwordHash?: string;
   },
 ) {
   const result = await prisma.user.updateMany({
     where: { id, version },
-    data: { ...data, version: { increment: 1 } },
+    data: { ...data, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }
@@ -77,10 +79,11 @@ export async function updateUserActiveStatus(
   id: string,
   version: number,
   value: boolean,
+  updatedById: string,
 ) {
   const result = await prisma.user.updateMany({
     where: { id, version, active: true },
-    data: { active: value, version: { increment: 1 } },
+    data: { active: value, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }

@@ -19,6 +19,7 @@ import type {
 export async function registerContract(
   orgId: string,
   input: CreateContractInput,
+  createdBy: string,
 ) {
   const org = await findOrgById(orgId);
   if (!org) throw notFound("Organização");
@@ -32,7 +33,7 @@ export async function registerContract(
   }
 
   try {
-    return await createContract(orgId, input);
+    return await createContract(orgId, input, createdBy);
   } catch (e) {
     if (isPrismaError(e, "P2002")) {
       throw conflict("Organização já possui contrato. Use a rota de edição");
@@ -55,6 +56,7 @@ export async function getContract(orgId: string) {
 export async function updateContractById(
   orgId: string,
   input: UpdateContractInput,
+  updatedBy: string,
 ) {
   const { version, ...changes } = input;
   const contract = await findContract(orgId);
@@ -67,7 +69,7 @@ export async function updateContractById(
     throw badRequest("A data de vencimento deve ser futura");
   }
 
-  const count = await updateContract(orgId, version, changes);
+  const count = await updateContract(orgId, version, changes, updatedBy);
 
   if (count === 0) {
     throw conflict(
