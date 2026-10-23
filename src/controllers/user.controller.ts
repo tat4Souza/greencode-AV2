@@ -4,6 +4,7 @@ import {
   deleteUserById,
   getUserById,
   getUsers,
+  reactivateUserById,
   registerUser,
   updateUserById,
 } from "../services/user.service.js";
@@ -73,5 +74,13 @@ export async function deactivateUserHandler(
   }
 
   await deactivateUserById(request.params.id, request.body.version);
+  return reply.code(204).send();
+}
+
+export async function reactivateUserHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
+  reply: FastifyReply,
+) {
+  await reactivateUserById(request.params.id, request.body.version);
   return reply.code(204).send();
 }

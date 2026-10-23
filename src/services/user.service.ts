@@ -7,11 +7,11 @@ import {
   bumpTokenVersion,
   countActiveAdmins,
   createUser,
-  deactivateUser,
   deleteUser,
   findUserById,
   findUsers,
   updateUser,
+  updateUserActiveStatus,
 } from "../repositories/user.repository.js";
 import {
   badRequest,
@@ -101,9 +101,25 @@ export async function updateUserById(id: string, input: UpdateUserInput) {
 export async function deactivateUserById(id: string, version: number) {
   const user = await findUserById(id);
   if (!user) throw notFound("Usuário");
+
+  if (!user.active) throw badRequest("Este usuário já está inativo");
+
   await assertNotLastAdmin(user.role);
 
-  const count = await deactivateUser(id, version);
+  const count = await updateUserActiveStatus(id, version, false);
+  if (count === 0)
+    throw conflict(
+      "Usuário foi alterado por outra pessoa. Recarregue os dados",
+    );
+}
+
+export async function reactivateUserById(id: string, version: number) {
+  const user = await findUserById(id);
+  if (!user) throw notFound("Usuário");
+
+  if (user.active) throw badRequest("Este usuário já está ativo");
+
+  const count = await updateUserActiveStatus(id, version, true);
   if (count === 0)
     throw conflict(
       "Usuário foi alterado por outra pessoa. Recarregue os dados",

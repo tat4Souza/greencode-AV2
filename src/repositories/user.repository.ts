@@ -73,10 +73,14 @@ export function deleteUser(id: string) {
   });
 }
 
-export async function deactivateUser(id: string, version: number) {
+export async function updateUserActiveStatus(
+  id: string,
+  version: number,
+  value: boolean,
+) {
   const result = await prisma.user.updateMany({
     where: { id, version, active: true },
-    data: { active: false, version: { increment: 1 } },
+    data: { active: value, version: { increment: 1 } },
   });
   return result.count;
 }

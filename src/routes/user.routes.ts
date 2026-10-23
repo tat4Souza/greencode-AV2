@@ -4,6 +4,7 @@ import {
   deleteUserHandler,
   getUserByIdHandler,
   getUsersHandler,
+  reactivateUserHandler,
   registerUserHandler,
   updateUserHandler,
 } from "../controllers/user.controller.js";
@@ -104,6 +105,19 @@ async function userRoutes(server: FastifyInstance) {
       },
     },
     deactivateUserHandler,
+  );
+
+  server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
+    "/:id/reactivate",
+    {
+      schema: {
+        ...userRoutes,
+        summary: "Ativa o usuário com o id correspondente",
+        params: idParamsSchema,
+        body: versionBodySchema,
+      },
+    },
+    reactivateUserHandler,
   );
 }
 

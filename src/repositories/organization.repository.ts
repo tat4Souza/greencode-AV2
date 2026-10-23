@@ -107,18 +107,22 @@ export async function deleteOrganization(id: string) {
   });
 }
 
-export async function deactivateOrganization(id: string, version: number) {
+export async function updateOrganizationActiveStatus(
+  id: string,
+  version: number,
+  value: boolean,
+) {
   return prisma.$transaction(async (tx) => {
     const result = await tx.organization.updateMany({
-      where: { id, version, active: true },
-      data: { active: false, version: { increment: 1 } },
+      where: { id, version, active: !value },
+      data: { active: value, version: { increment: 1 } },
     });
 
     if (result.count === 0) return 0;
 
     await tx.batch.updateMany({
-      where: { orgId: id, active: true },
-      data: { active: false, version: { increment: 1 } },
+      where: { orgId: id, active: !value },
+      data: { active: value, version: { increment: 1 } },
     });
 
     return result.count;

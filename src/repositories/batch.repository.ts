@@ -115,7 +115,11 @@ export async function deleteBatch(id: string) {
   });
 }
 
-export async function deactivateBatch(id: string, version: number) {
+export async function updateBatchActiveStatus(
+  id: string,
+  version: number,
+  value: boolean,
+) {
   const result = await prisma.batch.updateMany({
     where: { id, version, active: true },
     data: { active: false, version: { increment: 1 } },

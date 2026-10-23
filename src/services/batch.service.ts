@@ -11,11 +11,11 @@ import {
 } from "../lib/validators.js";
 import {
   createBatch,
-  deactivateBatch,
   deleteBatch,
   findAllBatches,
   findBatchById,
   updateBatch,
+  updateBatchActiveStatus,
   updateBatchStatus,
 } from "../repositories/batch.repository.js";
 import { findOrgById } from "../repositories/organization.repository.js";
@@ -140,9 +140,27 @@ export async function deactivateBatchById(id: string, version: number) {
   const batch = await findBatchById(id);
   if (!batch) throw notFound("Lote");
 
-  const count = await deactivateBatch(id, version);
+  if (!batch.active) {
+    throw badRequest("Este lote já está inativo");
+  }
+
+  const count = await updateBatchActiveStatus(id, version, false);
   if (count === 0)
     throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados");
+}
+
+export async function reactivateBatchById(id: string, version: number) {
+  const batch = await findBatchById(id);
+  if (!batch) throw notFound("Lote");
+
+  if (batch.active) {
+    throw badRequest("Este lote já está ativo");
+  }
+
+  const count = await updateBatchActiveStatus(id, version, true);
+  if (count === 0) {
+    throw conflict("Lote foi alterado por outra pessoa. Recarregue os dados");
+  }
 }
 
 export async function deleteBatchById(id: string) {

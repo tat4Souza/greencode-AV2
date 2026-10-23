@@ -10,6 +10,7 @@ import {
   deleteBatchById,
   getAllBatches,
   getBatchById,
+  reactivateBatchById,
   registerBatch,
   updateBatchById,
   updateBatchByStatus,
@@ -81,5 +82,13 @@ export async function deactivateBatchHandler(
   reply: FastifyReply,
 ) {
   await deactivateBatchById(request.params.id, request.body.version);
+  return reply.code(204).send();
+}
+
+export async function reactivateBatchHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
+  reply: FastifyReply,
+) {
+  await reactivateBatchById(request.params.id, request.body.version);
   return reply.code(204).send();
 }

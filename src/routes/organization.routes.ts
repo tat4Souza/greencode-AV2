@@ -4,6 +4,7 @@ import {
   deleteOrgHandler,
   getOrgByIdHandler,
   getOrgsHandler,
+  reactivateOrgHandler,
   registerOrgHandler,
   updateOrgByIdHandler,
 } from "../controllers/organization.controller.js";
@@ -106,6 +107,19 @@ async function organizationRoutes(server: FastifyInstance) {
       },
     },
     deactivateOrgHandler,
+  );
+
+  server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
+    "/:id/reactivate",
+    {
+      schema: {
+        ...orgsRoutes,
+        summary: "Ativa a organização com id correspondente",
+        params: idParamsSchema,
+        body: versionBodySchema,
+      },
+    },
+    reactivateOrgHandler,
   );
 }
 

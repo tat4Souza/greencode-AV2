@@ -6,11 +6,11 @@ import {
 } from "../lib/errors.js";
 import {
   createOrganization,
-  deactivateOrganization,
   deleteOrganization,
   findOrgById,
   findOrgs,
   updateOrganization,
+  updateOrganizationActiveStatus,
 } from "../repositories/organization.repository.js";
 import type {
   ContractFilter,
@@ -82,7 +82,22 @@ export async function deactivateOrgById(id: string, version: number) {
   const org = await findOrgById(id);
   if (!org) throw notFound("Organização");
 
-  const count = await deactivateOrganization(id, version);
+  if (!org.active) throw badRequest("Está organização já está inativa");
+
+  const count = await updateOrganizationActiveStatus(id, version, false);
+  if (count === 0)
+    throw conflict(
+      "Organização foi alterada por outra pessoa. Recarregue os dados",
+    );
+}
+
+export async function reactivateOrgById(id: string, version: number) {
+  const org = await findOrgById(id);
+  if (!org) throw notFound("Organização");
+
+  if (org.active) throw badRequest("Esta organização já está ativa");
+
+  const count = await updateOrganizationActiveStatus(id, version, true);
   if (count === 0)
     throw conflict(
       "Organização foi alterada por outra pessoa. Recarregue os dados",

@@ -4,6 +4,7 @@ import {
   deleteBatchHandler,
   getAllBatchesHandler,
   getBatchByIdHandler,
+  reactivateBatchHandler,
   registerBatchHandler,
   updateBatchByIdHandler,
   updateBatchByStatusHandler,
@@ -143,6 +144,19 @@ async function batchRoutes(server: FastifyInstance) {
       },
     },
     deactivateBatchHandler,
+  );
+
+  server.patch<{ Params: IdParamsSchema; Body: VersionBody }>(
+    "/:id/reactivate",
+    {
+      schema: {
+        ...batchesRoute,
+        summary: "Ativa o lote com id correspondente",
+        params: idParamsSchema,
+        body: versionBodySchema,
+      },
+    },
+    reactivateBatchHandler,
   );
 }
 

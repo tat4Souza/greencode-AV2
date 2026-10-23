@@ -4,6 +4,7 @@ import {
   deleteOrgById,
   getOrgById,
   getOrgs,
+  reactivateOrgById,
   registerOrganization,
   updateOrgById,
 } from "../services/organization.service.js";
@@ -66,5 +67,13 @@ export async function deactivateOrgHandler(
   reply: FastifyReply,
 ) {
   await deactivateOrgById(request.params.id, request.body.version);
+  return reply.code(204).send();
+}
+
+export async function reactivateOrgHandler(
+  request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
+  reply: FastifyReply,
+) {
+  await reactivateOrgById(request.params.id, request.body.version);
   return reply.code(204).send();
 }
