@@ -1,12 +1,17 @@
 import { z } from "zod";
 
 export const contractSchema = z.object({
-  expiresAt: z.coerce.date(),
+  expiresAt: z.coerce
+    .date("Precisa ser uma data válida")
+    .min(1, "Data de vencimento do contrato é obrigatória"),
+  signedAt: z.coerce
+    .date("Precisa ser uma data válida")
+    .min(1, "Data de assinatura do contrato é obrigatória"),
   clauses: z
     .array(
       z.object({
-        title: z.string().min(1),
-        description: z.string().min(1),
+        title: z.string().min(1, "Título do contrato é obrigatório"),
+        description: z.string().min(1, "Descrição do contrato é obrigatória"),
       }),
     )
     .min(1, "Informe ao menos uma cláusula"),

@@ -17,6 +17,8 @@ import equipmentsRoutes from "./routes/equipment.routes.js";
 import { env } from "./lib/env.js";
 import { prisma } from "./lib/prisma.js";
 import { ZodError } from "zod";
+import settingsRoute from "./routes/settings.routes.js";
+import reportRoutes from "./routes/report.routes.js";
 
 export const server = Fastify({ logger: true });
 
@@ -143,7 +145,9 @@ async function main() {
       prefix: "/api/organizations",
     });
     authentiicated.register(batchRoutes, { prefix: "/api/batches" });
-    authentiicated.register(equipmentsRoutes, { prefix: "api/equipments" });
+    authentiicated.register(equipmentsRoutes, { prefix: "/api/equipments" });
+    authentiicated.register(settingsRoute, { prefix: "/api/settings" });
+    authentiicated.register(reportRoutes, { prefix: "/api/reports" });
   });
 
   try {

@@ -92,6 +92,7 @@ model User {
   createdEquipments    Equipment[]    @relation("EquipmentCreatedBy")
   updatedEquipments    Equipment[]    @relation("EquipmentUpdatedBy")
   movements            Movement[]
+  settings             SystemSetting?
 
   @@map("usuario")
 }
@@ -221,4 +222,17 @@ model Movement {
   @@index([equipmentId, performedAt])
   @@index([performedById])
   @@map("movimentacao")
+}
+
+model SystemSetting {
+  id                        String   @id @default(uuid()) @map("param_cod") @db.Uuid
+  taxRate                   Decimal  @map("param_aliquota_imposto") @db.Decimal(5, 2) 
+  depreciationRate          Decimal  @map("param_coef_depreciacao") @db.Decimal(5, 2) 
+  updatedById               String   @unique @map("param_atualizado_por") @db.Uuid
+  updatedAt                 DateTime @updatedAt @map("param_atualizado_em")
+  version                   Int      @default(0) @map("param_versao_otimista")
+
+  updatedBy                 User     @relation(fields: [updatedById], references: [id])
+
+  @@map("configuracoes_sistema")
 }

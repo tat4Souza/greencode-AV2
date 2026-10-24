@@ -1,5 +1,6 @@
 import { cnpj } from "cpf-cnpj-validator";
 import { z } from "zod";
+import { contractSchema } from "./contract.schema.js";
 
 export const createOrgSchema = z.object({
   name: z.string().min(1, "Razão Social é obrigatória"),
@@ -64,25 +65,7 @@ export const createOrgSchema = z.object({
           : "Precisa ser uma UF válida",
     },
   ),
-  contract: z
-    .object({
-      expiresAt: z.coerce
-        .date("Precisa ser uma data válida")
-        .min(1, "Data de vencimento do contrato é obrigatória"),
-      clauses: z
-        .array(
-          z.object({
-            title: z.string().min(1, "Título do contrato é obrigatório"),
-            description: z
-              .string()
-              .min(1, "Descrição do contrato é obrigatória"),
-          }),
-        )
-        .min(1, "Informe ao menos uma cláusula"),
-      monthlyValue: z.number().positive("Valor mensal deve ser maior que zero"),
-      autoRenewal: z.boolean().optional(),
-    })
-    .optional(),
+  contract: contractSchema.optional(),
 });
 
 export const orgResponseSchema = z.object({
