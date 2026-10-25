@@ -42,11 +42,15 @@ export const listEquipmentsQuerySchema = z.object({
   batchId: z.uuid().optional(),
   status: z.enum(TrackingStatus).optional(),
   type: z.enum(EquipmentType).optional(),
+  active: z.stringbool().default(true),
 });
 
-export const movementCodeParamsSchema = z.object({ code: z.string().min(1) });
+export const movementParamsSchema = z.object({
+  id: z.uuid(),
+  movementId: z.uuid(),
+});
 
-export type MovementCodeParams = z.infer<typeof movementCodeParamsSchema>;
+export type MovementParams = z.infer<typeof movementParamsSchema>;
 export type ListEquipmentsQuery = z.infer<typeof listEquipmentsQuerySchema>;
 export type UpdateEquipmentInput = z.infer<typeof updateEquipmentSchema>;
 export type CreateEquipmentInput = z.infer<typeof createEquipmentSchema>;

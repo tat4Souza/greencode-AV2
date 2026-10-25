@@ -1,33 +1,28 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import {
   idParamsSchema,
   type IdParamsSchema,
 } from "../schemas/common.schema.js";
+import {
+  movementParamsSchema,
+  type MovementParams,
+} from "../schemas/equipment.schema.js";
 import { movementResponseSchema } from "../schemas/movements.schema.js";
 import {
   deleteMovementHandler,
   getMovementsByEquipmentHandler,
 } from "../controllers/movement.controller.js";
-import { z } from "zod";
-import { requireRole } from "../middlewares/auth.js";
-import {
-  movementCodeParamsSchema,
-  type MovementCodeParams,
-} from "../schemas/equipment.schema.js";
 
 async function movementRoutes(server: FastifyInstance) {
-  const canView = { onRequest: [requireRole("ADMIN", "GESTOR", "AUDITOR")] };
-  const canWrite = { onRequest: [requireRole("ADMIN", "GESTOR")] };
   const movementsRoute = { tags: ["Movements"] };
 
   server.get<{ Params: IdParamsSchema }>(
     "/",
     {
-      ...canView,
       schema: {
         ...movementsRoute,
-        summary:
-          "Lista os todas as moviemntações de um determinado equipamento",
+        summary: "Lista todas as movimentações de um equipamento",
         params: idParamsSchema,
         response: { 200: z.array(movementResponseSchema) },
       },
@@ -35,14 +30,13 @@ async function movementRoutes(server: FastifyInstance) {
     getMovementsByEquipmentHandler,
   );
 
-  server.delete<{ Params: MovementCodeParams }>(
-    "/:code",
+  server.delete<{ Params: MovementParams }>(
+    "/:movementId",
     {
-      ...canWrite,
       schema: {
         ...movementsRoute,
         summary: "Deleta a movimentação com id correspondente",
-        params: movementCodeParamsSchema,
+        params: movementParamsSchema,
       },
     },
     deleteMovementHandler,

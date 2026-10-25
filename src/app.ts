@@ -137,17 +137,17 @@ async function main() {
 
   server.register(authRoutes, { prefix: "/api/auth" });
 
-  server.register(async (authentiicated) => {
-    authentiicated.addHook("onRequest", auth);
+  server.register(async (authenticated) => {
+    authenticated.addHook("onRequest", auth);
 
-    authentiicated.register(userRoutes, { prefix: "/api/users" });
-    authentiicated.register(organizationRoutes, {
+    authenticated.register(userRoutes, { prefix: "/api/users" });
+    authenticated.register(organizationRoutes, {
       prefix: "/api/organizations",
     });
-    authentiicated.register(batchRoutes, { prefix: "/api/batches" });
-    authentiicated.register(equipmentsRoutes, { prefix: "/api/equipments" });
-    authentiicated.register(settingsRoute, { prefix: "/api/settings" });
-    authentiicated.register(reportRoutes, { prefix: "/api/reports" });
+    authenticated.register(batchRoutes, { prefix: "/api/batches" });
+    authenticated.register(equipmentsRoutes, { prefix: "/api/equipments" });
+    authenticated.register(settingsRoute, { prefix: "/api/settings" });
+    authenticated.register(reportRoutes, { prefix: "/api/reports" });
   });
 
   try {

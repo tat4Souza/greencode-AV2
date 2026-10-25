@@ -83,7 +83,7 @@ export async function deleteContractById(id: string) {
   try {
     await deleteContract(id);
   } catch (e) {
-    if (isPrismaError(e, "P2025")) throw notFound("Organização");
+    if (isPrismaError(e, "P2025")) throw notFound("Contrato");
     throw e;
   }
 }

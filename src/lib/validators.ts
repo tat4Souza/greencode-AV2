@@ -12,7 +12,7 @@ export function assertValidEnteredAt(date?: Date) {
     throw badRequest("Data de entrada não pode ser anterior a 90 dias");
 }
 
-export async function assertBatchStatusRules(
+export function assertBatchStatusRules(
   equipments: { status: TrackingStatus }[],
   newStatus: BatchStatus,
 ) {

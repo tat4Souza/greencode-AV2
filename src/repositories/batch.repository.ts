@@ -102,14 +102,6 @@ export async function updateBatchStatus(
   return result.count;
 }
 
-export async function findExisting(ids: string[]) {
-  const found = await prisma.equipment.findMany({
-    where: { id: { in: ids } },
-    select: { id: true },
-  });
-  return found.map((e) => e.id);
-}
-
 export async function deleteBatch(id: string) {
   return prisma.batch.delete({
     where: { id },
@@ -124,8 +116,8 @@ export async function updateBatchActiveStatus(
   updatedById: string,
 ) {
   const result = await prisma.batch.updateMany({
-    where: { id, version, active: true },
-    data: { active: false, version: { increment: 1 }, updatedById },
+    where: { id, version, active: !value },
+    data: { active: value, version: { increment: 1 }, updatedById },
   });
   return result.count;
 }

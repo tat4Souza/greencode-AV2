@@ -90,7 +90,7 @@ export async function deactivateOrgById(
   const org = await findOrgById(id);
   if (!org) throw notFound("Organização");
 
-  if (!org.active) throw badRequest("Está organização já está inativa");
+  if (!org.active) throw badRequest("Esta organização já está inativa");
 
   const count = await updateOrganizationActiveStatus(
     id,

@@ -77,7 +77,7 @@ export async function updateUserById(
       curUser.role === "ADMIN" &&
       changes.role !== "ADMIN"
     ) {
-      assertNotLastAdmin(changes.role);
+      await assertNotLastAdmin(curUser.role);
     }
 
     const count = await updateUser(id, version, updatedBy, { ...changes });

@@ -68,9 +68,9 @@ export function findMovementsByEquipment(equipmentId: string) {
   });
 }
 
-export async function deleteMovement(id: string) {
+export async function deleteMovement(id: string, equipmentId: string) {
   return prisma.movement.delete({
-    where: { id },
+    where: { id, equipmentId },
     select: { id: true },
   });
 }

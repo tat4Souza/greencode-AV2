@@ -34,10 +34,7 @@ export async function getAllEquipmentsHandler(
   request: FastifyRequest<{ Querystring: ListEquipmentsQuery }>,
   reply: FastifyReply,
 ) {
-  const { batchId, status, type } = request.query;
-
-  const equipments = await getAllEquipments(batchId, status, type);
-
+  const equipments = await getAllEquipments(request.query);
   return reply.send(equipments);
 }
 

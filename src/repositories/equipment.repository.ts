@@ -51,11 +51,20 @@ export function findAllEquipments(filters: {
   batchId?: string;
   status?: TrackingStatus;
   type?: EquipmentType;
+  active: boolean;
 }) {
+  const { active, ...rest } = filters;
   return prisma.equipment.findMany({
     select: publicEquipmentSelect,
-    where: filters,
+    where: { ...rest, batch: { active } },
     orderBy: { createdAt: "desc" },
+  });
+}
+
+export function findActiveEquipmentById(id: string) {
+  return prisma.equipment.findFirst({
+    where: { id, batch: { active: true } },
+    select: publicEquipmentSelect,
   });
 }
 

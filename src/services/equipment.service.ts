@@ -10,13 +10,11 @@ import {
   notFound,
 } from "../lib/errors.js";
 import { assertBatchStatusRules } from "../lib/validators.js";
-import {
-  findBatchById,
-  findExisting,
-} from "../repositories/batch.repository.js";
+import { findBatchById } from "../repositories/batch.repository.js";
 import {
   createEquipment,
   deleteEquipment,
+  findActiveEquipmentById,
   findAllEquipments,
   findEquipmentById,
   updateEquipment,
@@ -53,19 +51,18 @@ export async function registerEquipment(
   }
 }
 
-export async function getAllEquipments(
-  batchId?: string,
-  status?: TrackingStatus,
-  type?: EquipmentType,
-) {
-  return findAllEquipments({ batchId, status, type });
+export async function getAllEquipments(filters: {
+  batchId?: string;
+  status?: TrackingStatus;
+  type?: EquipmentType;
+  active: boolean;
+}) {
+  return findAllEquipments(filters);
 }
 
 export async function getEquipmentById(id: string) {
-  const equipment = await findEquipmentById(id);
-
+  const equipment = await findActiveEquipmentById(id);
   if (!equipment) throw notFound("Equipamento");
-
   return equipment;
 }
 
