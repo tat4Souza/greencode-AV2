@@ -55,9 +55,9 @@ export function assertBatchStatusRules(
       if (
         equipments.some(
           (eq) =>
-            eq.status !== "AGUARDANDO_TRIAGEM" &&
-            eq.status !== "EM_TRIAGEM" &&
-            eq.status !== "AGUARDANDO_DESMONTE",
+            eq.status === "AGUARDANDO_TRIAGEM" ||
+            eq.status === "EM_TRIAGEM" ||
+            eq.status === "AGUARDANDO_DESMONTE",
         )
       ) {
         throw badRequest(
