@@ -14,15 +14,16 @@ export const publicBatchSelect = {
   carrier: true,
   status: true,
   obs: true,
-  createdAt: true,
-  updatedAt: true,
-  version: true,
   org: { select: { id: true, name: true, cnpj: true } },
-  createdBy: { select: { id: true, username: true } },
   equipments: {
     select: publicEquipmentSelect,
     orderBy: { batchPosition: "asc" },
   },
+  createdBy: { select: { id: true, username: true } },
+  createdAt: true,
+  updatedBy: { select: { id: true, username: true } },
+  updatedAt: true,
+  version: true,
   active: true,
 } satisfies Prisma.BatchSelect;
 

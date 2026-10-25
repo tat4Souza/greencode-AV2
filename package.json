@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/app.ts",
+    "test": "tsx scripts/jornada-teste.ts",
     "clean": "rimraf dist",
     "build": "npm run clean && prisma generate && tsc -p tsconfig.build.json",
     "start": "node dist/app.js",

@@ -24,12 +24,14 @@ const userCore = {
 
 export const createUserSchema = z.object({
   ...userCore,
-  password: z.string({
-    error: (issue) =>
-      issue.input === undefined
-        ? "Senha é obrigatório"
-        : "Precisa ser uma string",
-  }),
+  password: z
+    .string({
+      error: (issue) =>
+        issue.input === undefined
+          ? "Senha é obrigatório"
+          : "Precisa ser uma string",
+    })
+    .min(3, "Precisa ter pelo menos 3 caracteres"),
 });
 
 export const userResponse = z.object({

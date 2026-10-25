@@ -1,4 +1,4 @@
-import { badRequest, conflict, isPrismaError } from "../lib/errors.js";
+import { conflict, isPrismaError } from "../lib/errors.js";
 import {
   createSystemSettings,
   findSystemSetting,

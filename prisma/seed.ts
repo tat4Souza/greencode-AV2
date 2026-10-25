@@ -173,10 +173,13 @@ async function seedOrganization(
           contract.expiresInDays >= 0
             ? daysAhead(contract.expiresInDays)
             : daysAgo(-contract.expiresInDays),
-        clauses: {
-          coleta: "Coleta semanal de equipamentos",
-          certificacao: "Emissão de certificado de destinação",
-        },
+        clauses: [
+          { title: "Coleta", description: "Coleta semanal de equipamentos" },
+          {
+            title: "Certificação",
+            description: "Emissão de certificado de destinação",
+          },
+        ],
         monthlyValue: contract.value,
         autoRenewal: contract.expiresInDays >= 0,
         createdById: adminId,

@@ -1,6 +1,5 @@
 import type { BatchStatus, TrackingStatus } from "../generated/prisma/enums.js";
-import { findBatchById } from "../repositories/batch.repository.js";
-import { badRequest, notFound } from "./errors.js";
+import { badRequest } from "./errors.js";
 
 export function assertValidEnteredAt(date?: Date) {
   if (!date) return;
@@ -16,6 +15,12 @@ export function assertBatchStatusRules(
   equipments: { status: TrackingStatus }[],
   newStatus: BatchStatus,
 ) {
+  if (equipments.length === 0) {
+    throw badRequest(
+      "Lote precisa de pelo menos um equipamento para sair de RECEBIDO",
+    );
+  }
+
   switch (newStatus) {
     case "RECEBIDO":
       if (
