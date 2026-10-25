@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "configuracoes_sistema" ALTER COLUMN "param_cod" SET DEFAULT '00000000-0000-0000-0000-000000000001';

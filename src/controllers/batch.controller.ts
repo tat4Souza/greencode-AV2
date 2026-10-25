@@ -50,7 +50,11 @@ export async function updateBatchByIdHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: UpdateBatchInput }>,
   reply: FastifyReply,
 ) {
-  const batch = await updateBatchById(request.params.id, request.body);
+  const batch = await updateBatchById(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
   return reply.send(batch);
 }
 
@@ -65,6 +69,7 @@ export async function updateBatchByStatusHandler(
     request.params.id,
     request.body.version,
     request.body.status,
+    request.user.id,
   );
   return reply.send(batch);
 }
@@ -81,7 +86,11 @@ export async function deactivateBatchHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
   reply: FastifyReply,
 ) {
-  await deactivateBatchById(request.params.id, request.body.version);
+  await deactivateBatchById(
+    request.params.id,
+    request.body.version,
+    request.user.id,
+  );
   return reply.code(204).send();
 }
 
@@ -89,6 +98,10 @@ export async function reactivateBatchHandler(
   request: FastifyRequest<{ Params: IdParamsSchema; Body: VersionBody }>,
   reply: FastifyReply,
 ) {
-  await reactivateBatchById(request.params.id, request.body.version);
+  await reactivateBatchById(
+    request.params.id,
+    request.body.version,
+    request.user.id,
+  );
   return reply.code(204).send();
 }

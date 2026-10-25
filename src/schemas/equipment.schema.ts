@@ -10,7 +10,12 @@ export const createEquipmentSchema = z.object({
   brand: z.string().min(1),
   model: z.string().min(1),
   status: z.enum(TrackingStatus),
-  manufacturingYear: z.int().min(1970).max(new Date().getFullYear()),
+  manufacturingYear: z
+    .int()
+    .min(1970, { message: "Ano de fabricação deve ser a partir de 1970" })
+    .refine((year) => year <= new Date().getFullYear(), {
+      message: "Ano de fabricação não pode ser futuro",
+    }),
   physicalState: z.enum(PhysicalState),
   weightKG: z.number().positive(),
 });

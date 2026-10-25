@@ -1,5 +1,6 @@
-import { badRequest, conflict } from "../lib/errors.js";
+import { badRequest, conflict, isPrismaError } from "../lib/errors.js";
 import {
+  createSystemSettings,
   findSystemSetting,
   updateSystemSettings,
 } from "../repositories/settings.repository.js";
@@ -23,19 +24,29 @@ export async function updateSettings(
   input: UpdateSettingsInput,
   userId: string,
 ) {
-  if (Object.keys(input).length === 0) {
-    throw badRequest("É necessário passar o conteúdo a ser editado");
+  const { version, ...changes } = input;
+  const current = await findSystemSetting();
+
+  if (!current) {
+    try {
+      await createSystemSettings(changes, userId);
+    } catch (e) {
+      if (isPrismaError(e, "P2002")) {
+        throw conflict(
+          "As configurações globais acabaram de ser criadas por outro administrador. Recarregue os dados.",
+        );
+      }
+      throw e;
+    }
+    return findSystemSetting();
   }
 
-  const { version, ...changes } = input;
-
-  const count = await updateSystemSettings({ ...changes }, version, userId);
-
+  const count = await updateSystemSettings(changes, version, userId);
   if (count === 0) {
     throw conflict(
       "Configurações Globais já foram alteradas por outro administrador. Recarregue os dados.",
     );
   }
 
-  return await findSystemSetting();
+  return findSystemSetting();
 }
