@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "predev": "prisma generate",
     "dev": "tsx watch src/app.ts",
     "test": "tsx scripts/jornada-teste.ts",
     "clean": "rimraf dist",
@@ -13,6 +14,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "predb:seed": "prisma generate",
     "db:seed": "prisma db seed"
   },
   "keywords": [],

@@ -95,7 +95,7 @@ export async function updateEquipamentById(
     return await getEquipmentById(id);
   } catch (e) {
     if (isPrismaError(e, "P2002"))
-      throw conflict("Código de barras ou posição já cadastrados neste lote");
+      throw conflict("Posição já cadastrada neste lote");
     throw e;
   }
 }
