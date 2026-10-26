@@ -21,9 +21,9 @@ Seu propósito continua sendo rastrear o fluxo completo de equipamentos obsoleto
 
 ---
 
-## 💻 Técnologias utilizadas
+## 💻 Tecnologias utilizadas
 
-![Static Badge](https://img.shields.io/badge/node-%235FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white) 
+![Static Badge](https://img.shields.io/badge/node-%235FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/typescript-%233178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/fastify-%23000000?style=for-the-badge&logo=fastify&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/zod-%23408AFF?style=for-the-badge&logo=zod&logoColor=white)
@@ -34,6 +34,7 @@ Seu propósito continua sendo rastrear o fluxo completo de equipamentos obsoleto
 ![Static Badge](https://img.shields.io/badge/postgree-%234169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ### Usos no projeto
+
 - **Node.js + TypeScript**: Runtime e tipagem estática (ESM, `strict`)
 - **Fastify 5**: Servidor HTTP, hooks de autenticação e plugins
 - **Zod 4 + fastify-type-provider-zod**Ç Validação e tipagem de entradas e saídas
@@ -56,12 +57,12 @@ Projetado e validado para execução nativa nos seguintes ambientes:
 
 A API aplica Controle de Acesso Baseado em Papéis (RBAC): cada rota exige o papel adequado e **todas as funcionalidades de cada conta ficam restritas ao escopo que lhe pertence**. Uma conta que tente acessar algo fora do seu escopo recebe `403 Forbidden`. O **Administrador** é o único papel com acesso a todos os recursos.
 
-| Papel                               | O que faz na plataforma                                                                                                                  | Rotas permitidas                                                    |
-| :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------ |
-| **ADMIN** (Administrador)           | Gestão de contas de acesso, parametrização global (alíquota de impostos e depreciação) e acesso a todas as funcionalidades da plataforma | Todas                                                               |
-| **OPERADOR** (Operador de Cadastro) | Cadastra e gerencia organizações clientes e seus contratos                                                                               | `/api/organizations` e `/api/organizations/:id/contract`  (Todas inclusas na divisão 'Organizations' do swagger)          |
+| Papel                               | O que faz na plataforma                                                                                                                  | Rotas permitidas                                                                                                                    |
+| :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| **ADMIN** (Administrador)           | Gestão de contas de acesso, parametrização global (alíquota de impostos e depreciação) e acesso a todas as funcionalidades da plataforma | Todas                                                                                                                               |
+| **OPERADOR** (Operador de Cadastro) | Cadastra e gerencia organizações clientes e seus contratos                                                                               | `/api/organizations` e `/api/organizations/:id/contract` (Todas inclusas na divisão 'Organizations' do swagger)                     |
 | **GESTOR** (Gestor de Almoxarifado) | Controla o recebimento de lotes, a triagem e a movimentação de equipamentos                                                              | `/api/batches`, `/api/equipments` e `/api/equipments/:id/movements` (Todas inclusas na divisão 'Batches' e 'Equipments' do swagger) |
-| **AUDITOR**                         | Escopo exclusivo de relatórios (somente leitura)                                                                                         | `/api/reports`  (Todas inclusas na divisão 'Movements')                                                    |
+| **AUDITOR**                         | Escopo exclusivo de relatórios (somente leitura)                                                                                         | `/api/reports` (Todas inclusas na divisão 'Movements')                                                                              |
 
 Além das rotas acima, **todo usuário autenticado** pode usar `POST /api/auth/logout` e `PATCH /api/auth/password`. `POST /api/auth/login` é a única rota pública (além de `/healthcheck` e `/docs`).
 
@@ -117,30 +118,43 @@ copy .env.example .env
 **OBS**: Antes de seguir as próximas etapas, certifique-se de ter instalado todos os pacotes (`npm install`)
 
 #### I.) Banco no ar
+
 ```bash
 docker compose up -d
 ```
+
 #### II.) Instala tudo (o build e as migrations precisam das devDependencies)
+
 ```bash
 npm ci
 ```
-#### III.) Aplica as migrations 
+
+#### III.) Aplica as migrations
+
 ```bash
 npm run db:deploy
 ```
+
 #### IV.) Popula os dados de demonstração
+
 ```bash
 npm run db:seed
 ```
+
 #### V.) Compila: limpa dist, gera o client do Prisma e roda o tsc
+
 ```bash
 npm run build
 ```
+
 #### VI.) Simula o servidor de produção: remove as devDependencies
+
 ```bash
 npm prune --omit=dev
 ```
+
 #### VII.) Sobe a versão compilada
+
 ```bash
 npm start
 ```
@@ -159,6 +173,7 @@ npm start
 | Porta configurável      | `PORT=4000 npm start` (Linux) ou `$env:PORT=4000; npm start` (PowerShell)                                                        |
 
 ### 5. Scripts disponíveis
+
 - `npm run dev`: Servidor em modo desenvolvimento (`tsx watch`);
 - `npm run build`: Limpa `dist`, gera o client do Prisma e compila o TypeScript;
 - `npm start`: Executa a versão compilada (`dist/app.js`);
@@ -166,7 +181,6 @@ npm start
 - `npm run db:migrate`: Cria/aplica migrations em desenvolvimento;
 - `npm run db:deploy`: Aplica as migrations existentes (produção);
 - `npm run db:seed`: Popula o banco com dados de demonstração
-
 
 ### 6. Massa de dados do seed
 
@@ -178,9 +192,8 @@ O seed cobre os cenários de validação do CLI e pode ser executado várias vez
 - **Movimentações:** histórico coerente com o caminho de cada equipamento, incluindo quedas de estado físico com justificativa.
 - **Configurações globais:** alíquota de 10% e depreciação de 15%.
 
-
-
 ### 7. O que é verificado no script de teste fornecido?
+
 O script scripts/jornada-teste.ts percorre a jornada completa da aplicação por meio da API, do login do administrador até a remoção dos dados criados, e demonstra as principais regras cobradas na AV1 e na AV2. Ele serve como base de conferência: os cenários adicionais podem ser verificados pelo Swagger (/docs) ou acrescentando novos passos ao próprio script.
 
 > Como executar (com o servidor no ar, em outro terminal, e o seed já executado):
@@ -188,7 +201,9 @@ O script scripts/jornada-teste.ts percorre a jornada completa da aplicação por
 ```bash
 npm run test
 ```
+
 #### Como funciona:
+
 Cada passo imprime [ OK ] ou [FALHOU], a rota chamada, o status HTTP recebido e a mensagem de erro devolvida pela API (quando houver);
 Ao final, o script exibe o total de passos aprovados e, em caso de falha, a lista do que falhou (o código de saída é diferente de zero);
 O script cria os próprios dados (CNPJs válidos e e-mails com um identificador único por execução), então pode ser executado várias vezes seguidas;
@@ -197,69 +212,93 @@ Ao terminar, as organizações criadas são removidas (levando junto contratos, 
 São executados 110 passos, divididos em 13 seções:
 
 #### I). Disponibilidade e autenticação
+
 - Verifica se o servidor responde ao endpoint de saúde (/healthcheck);
 - Confere se rotas protegidas são negadas sem token e com token inválido;
 - Confere se as credenciais são validadas corretamente: login com senha incorreta, com usuário inexistente e sem e-mail são negados;
 - Realiza o login do administrador e obtém o token JWT.
+
 #### II). Administrador: contas de acesso
+
 - Cria um usuário de cada papel disponível (OPERADOR, GESTOR e AUDITOR);
 - Verifica se e-mails duplicados e papéis inexistentes na plataforma são rejeitados;
 - Atualiza um usuário com a versão atual (permitido, pois ninguém alterou o registro nesse intervalo);
 - Atualiza um usuário com uma versão antiga (erro de conflito, pois isso significa que outra requisição alterou o dado antes: controle de concorrência otimista).
+
 #### III). Administrador: parâmetros globais
+
 - Consulta as configurações globais do sistema;
 - Verifica se alíquotas acima de 100% e negativas são rejeitadas;
 - Atualiza a alíquota de impostos e confere o conflito ao reutilizar uma versão antiga;
 - Restaura a alíquota original.
+
 #### IV). Login dos demais perfis
+
 - Autentica o operador, o gestor e o auditor com as contas criadas na seção anterior.
+
 #### V). Controle de acesso por papel (RBAC)
+
 - Verifica se cada perfil recebe 403 ao tentar acessar funcionalidades fora do seu escopo: o operador não acessa usuários nem cadastra lotes; o gestor não acessa organizações nem configurações globais; o auditor não acessa lotes nem cadastra organizações.
-#### VII). Operador: organizações e contratos
+
+#### VI). Operador: organizações e contratos
+
 - Verifica se CNPJs inválidos (dígitos repetidos e tamanho incorreto) e duplicados são rejeitados;
 - Testa o cadastro de contrato com vencimento no passado (rejeitado);
 - Cadastra uma organização com contrato válido e outra sem contrato (que pode permanecer ativa);
 - Verifica a listagem com o filtro de contratos válidos;
 - Atualiza uma organização com a versão atual (permitido) e com uma versão antiga (conflito).
+
 #### VII). Gestor: recebimento de lotes
+
 - Verifica se a criação de lote é recusada para organização inexistente ou sem contrato;
 - Verifica se datas de entrada futuras ou anteriores a 90 dias são rejeitadas;
 - Verifica se lote sem transportadora, equipamento com tipo inválido e equipamento com ano de fabricação futuro são rejeitados;
 - Cadastra um lote com 2 equipamentos em uma única transação (ambos nascem em AGUARDANDO_TRIAGEM);
 - Adiciona um equipamento avulso já em triagem (status inicial livre);
 - Consulta o lote para conferir o peso total calculado.
+
 #### VIII). Gestor: triagem e movimentação de equipamentos
+
 - Verifica se o desmonte sem triagem é rejeitado;
 - Coloca os equipamentos em triagem e confere o conflito ao movimentar com uma versão antiga;
 - Verifica se a queda de duas ou mais categorias no estado físico é rejeitada sem justificativa e aceita com justificativa;
 - Consulta o histórico para confirmar que as movimentações foram registradas automaticamente.
+
 #### IX). Gestor: ciclo de vida do lote
+
 - Verifica se pular etapas do lote é rejeitado;
 - Avança o lote para EM_TRIAGEM e confere que concluir a triagem com equipamentos ainda em triagem é rejeitado;
 - Avança os equipamentos e conclui a triagem do lote;
 - Verifica se encaminhar o lote com equipamentos aguardando desmonte é rejeitado e, depois, encaminha o lote;
 - Verifica se finalizar o lote com equipamentos ainda em desmonte é rejeitado e, depois, finaliza o lote;
 - Confere que um lote finalizado não aceita novas movimentações de equipamentos.
+
 #### X). Auditor: relatórios
+
 - Consulta os relatórios por organização (no período), por status de rastreamento e financeiro;
 - Verifica se um relatório sem o parâmetro obrigatório é rejeitado;
 - Confere que o gestor não acessa os relatórios.
+
 #### XI). Soft delete (inativar/reativar) e cascata
+
 - Verifica se um usuário com registros vinculados não pode ser removido (a API orienta a inativá-lo);
 - Cadastra e renova o contrato da segunda organização, que passa a poder receber lotes;
 - Inativa um lote e confere que ele continua consultável, que seus equipamentos deixam de aparecer e que ele não pode ser editado; depois o reativa;
 - Inativa uma organização e confere que seus lotes são inativados junto e que ela não recebe novos lotes; depois a reativa e confere que os lotes voltam a ficar ativos.
+
 #### XII). Hard delete (remoção definitiva) e cascata
+
 - Remove um equipamento, um lote, um contrato e uma organização e confirma que os registros não existem mais;
 - Remove a primeira organização e confirma que seus lotes e equipamentos foram removidos em cascata.
+
 #### XIII). Sessão, senha e ciclo de vida de usuários
+
 - Verifica se a troca de senha com a senha atual incorreta é rejeitada;
 - Troca a senha do auditor e confere que o token antigo deixa de valer (tokenVersion) e que o login com a nova senha funciona;
 - Realiza o logout do gestor e confere que o token dele deixa de valer;
 - Remove definitivamente um usuário sem registros vinculados;
 - Inativa o operador e confere que ele não consegue mais fazer login e que o token dele deixa de valer;
 - Verifica se o administrador é impedido de inativar a si mesmo.
- 
 
 <br>
 
@@ -450,6 +489,7 @@ Organization 1 ── N Batch
 Batch        1 ── N Equipment
 Equipment    1 ── N Movement
 ```
+
 > 💡 Mantive o banco de dados em português, por mais que o resto do código esteja em inglês. Essa decisão foi feita visando meu costume em montar bancos de dados nesse padrão (devido as aulas da professora Juliana).
 
 ### Restrições de unicidade

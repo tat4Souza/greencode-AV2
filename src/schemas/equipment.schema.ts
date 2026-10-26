@@ -39,7 +39,7 @@ export const equipmentResponseSchema = z.object({
 });
 
 export const updateEquipmentSchema = createEquipmentSchema
-  .omit({ physicalState: true })
+  .omit({ physicalState: true, status: true })
   .partial()
   .extend({ version: z.number().int().min(0) });
 
