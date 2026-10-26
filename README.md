@@ -29,15 +29,14 @@ Seu propósito continua sendo rastrear o fluxo completo de equipamentos obsoleto
 ![Static Badge](https://img.shields.io/badge/zod-%23408AFF?style=for-the-badge&logo=zod&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/prisma-%232D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/swagger-%2385EA2D?style=for-the-badge&logo=swagger&logoColor=black)
-![Static Badge](https://img.shields.io/badge/postman-%23FF6C37?style=for-the-badge&logo=postman&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/docker-%232496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Static Badge](https://img.shields.io/badge/postgree-%234169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Static Badge](https://img.shields.io/badge/postgresql-%234169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ### Usos no projeto
 
 - **Node.js + TypeScript**: Runtime e tipagem estática (ESM, `strict`)
 - **Fastify 5**: Servidor HTTP, hooks de autenticação e plugins
-- **Zod 4 + fastify-type-provider-zod**Ç Validação e tipagem de entradas e saídas
+- **Zod 4 + fastify-type-provider-zod**: Validação e tipagem de entradas e saídas
 - **Prisma 7 + PostgreSQL 16**: ORM, migrations versionadas e banco relacional
 - **@fastify/jwt + bcryptjs**: Autenticação stateless e hash de senhas
 - **@fastify/swagger + swagger-ui**: Documentação interativa da API (`/docs`)
@@ -115,8 +114,6 @@ copy .env.example .env
 
 ### 3. Executar o passo a passo
 
-**OBS**: Antes de seguir as próximas etapas, certifique-se de ter instalado todos os pacotes (`npm install`)
-
 #### I.) Banco no ar
 
 ```bash
@@ -159,7 +156,24 @@ npm prune --omit=dev
 npm start
 ```
 
-> 💡 Para voltar ao modo de desenvolvimento (`npm run dev`) depois do passo 6, execute `npm ci` novamente.
+#### VIII.) Executa o script de teste da jornada
+
+O script usa o `tsx`, uma devDependency removida no passo VI. Por isso, interrompa o servidor (`Ctrl+C`), restaure as dependências e suba o servidor novamente:
+
+```bash
+npm ci
+npm start
+```
+
+Em **outro terminal**, com o servidor rodando, execute:
+
+```bash
+npm run test
+```
+
+> 💡 Os detalhes do que o script verifica estão na seção 7.
+
+> 💡 Para voltar ao modo de desenvolvimento (`npm run dev`) depois do passo VI, execute `npm ci` novamente.
 
 ### 4. Verificar
 
@@ -180,7 +194,8 @@ npm start
 - `npm run db:generate`: Gera o Prisma Client;
 - `npm run db:migrate`: Cria/aplica migrations em desenvolvimento;
 - `npm run db:deploy`: Aplica as migrations existentes (produção);
-- `npm run db:seed`: Popula o banco com dados de demonstração
+- `npm run db:seed`: Popula o banco com dados de demonstração;
+- `npm run test`: Executa o script de teste da jornada completa pela API (requer o servidor rodando).
 
 ### 6. Massa de dados do seed
 
@@ -194,9 +209,9 @@ O seed cobre os cenários de validação do CLI e pode ser executado várias vez
 
 ### 7. O que é verificado no script de teste fornecido?
 
-O script scripts/jornada-teste.ts percorre a jornada completa da aplicação por meio da API, do login do administrador até a remoção dos dados criados, e demonstra as principais regras cobradas na AV1 e na AV2. Ele serve como base de conferência: os cenários adicionais podem ser verificados pelo Swagger (/docs) ou acrescentando novos passos ao próprio script.
+O script `scripts/jornada-teste.ts` percorre a jornada completa da aplicação por meio da API, do login do administrador até a remoção dos dados criados, e demonstra as principais regras cobradas na AV1 e na AV2. Ele serve como base de conferência: os cenários adicionais podem ser verificados pelo Swagger (`/docs`) ou acrescentando novos passos ao próprio script.
 
-> Como executar (com o servidor no ar, em outro terminal, e o seed já executado):
+> Como executar (com o servidor no ar, em outro terminal, e o seed já executado; veja o passo VIII de "Como testar"):
 
 ```bash
 npm run test
@@ -204,16 +219,16 @@ npm run test
 
 #### Como funciona:
 
-Cada passo imprime [ OK ] ou [FALHOU], a rota chamada, o status HTTP recebido e a mensagem de erro devolvida pela API (quando houver);
-Ao final, o script exibe o total de passos aprovados e, em caso de falha, a lista do que falhou (o código de saída é diferente de zero);
-O script cria os próprios dados (CNPJs válidos e e-mails com um identificador único por execução), então pode ser executado várias vezes seguidas;
-Ao terminar, as organizações criadas são removidas (levando junto contratos, lotes e equipamentos). Permanecem no banco apenas dois usuários de teste: um operador (inativo) e um gestor.
+- Cada passo imprime `[ OK ]` ou `[FALHOU]`, a rota chamada, o status HTTP recebido e a mensagem de erro devolvida pela API (quando houver);
+- Ao final, o script exibe o total de passos aprovados e, em caso de falha, a lista do que falhou (o código de saída é diferente de zero);
+- O script cria os próprios dados (CNPJs válidos e e-mails com um identificador único por execução), então pode ser executado várias vezes seguidas;
+- Ao terminar, as organizações criadas são removidas (levando junto contratos, lotes e equipamentos). Permanecem no banco apenas dois usuários de teste: um operador (inativo) e um gestor.
 
-São executados 110 passos, divididos em 13 seções:
+São executados **110 passos**, divididos em **13 seções**:
 
 #### I). Disponibilidade e autenticação
 
-- Verifica se o servidor responde ao endpoint de saúde (/healthcheck);
+- Verifica se o servidor responde ao endpoint de saúde (`/healthcheck`);
 - Confere se rotas protegidas são negadas sem token e com token inválido;
 - Confere se as credenciais são validadas corretamente: login com senha incorreta, com usuário inexistente e sem e-mail são negados;
 - Realiza o login do administrador e obtém o token JWT.
@@ -238,7 +253,7 @@ São executados 110 passos, divididos em 13 seções:
 
 #### V). Controle de acesso por papel (RBAC)
 
-- Verifica se cada perfil recebe 403 ao tentar acessar funcionalidades fora do seu escopo: o operador não acessa usuários nem cadastra lotes; o gestor não acessa organizações nem configurações globais; o auditor não acessa lotes nem cadastra organizações.
+- Verifica se cada perfil recebe `403` ao tentar acessar funcionalidades fora do seu escopo: o operador não acessa usuários nem cadastra lotes; o gestor não acessa organizações nem configurações globais; o auditor não acessa lotes nem cadastra organizações.
 
 #### VI). Operador: organizações e contratos
 
@@ -253,7 +268,7 @@ São executados 110 passos, divididos em 13 seções:
 - Verifica se a criação de lote é recusada para organização inexistente ou sem contrato;
 - Verifica se datas de entrada futuras ou anteriores a 90 dias são rejeitadas;
 - Verifica se lote sem transportadora, equipamento com tipo inválido e equipamento com ano de fabricação futuro são rejeitados;
-- Cadastra um lote com 2 equipamentos em uma única transação (ambos nascem em AGUARDANDO_TRIAGEM);
+- Cadastra um lote com 2 equipamentos em uma única transação (ambos nascem em `AGUARDANDO_TRIAGEM`);
 - Adiciona um equipamento avulso já em triagem (status inicial livre);
 - Consulta o lote para conferir o peso total calculado.
 
@@ -267,7 +282,7 @@ São executados 110 passos, divididos em 13 seções:
 #### IX). Gestor: ciclo de vida do lote
 
 - Verifica se pular etapas do lote é rejeitado;
-- Avança o lote para EM_TRIAGEM e confere que concluir a triagem com equipamentos ainda em triagem é rejeitado;
+- Avança o lote para `EM_TRIAGEM` e confere que concluir a triagem com equipamentos ainda em triagem é rejeitado;
 - Avança os equipamentos e conclui a triagem do lote;
 - Verifica se encaminhar o lote com equipamentos aguardando desmonte é rejeitado e, depois, encaminha o lote;
 - Verifica se finalizar o lote com equipamentos ainda em desmonte é rejeitado e, depois, finaliza o lote;
@@ -294,7 +309,7 @@ São executados 110 passos, divididos em 13 seções:
 #### XIII). Sessão, senha e ciclo de vida de usuários
 
 - Verifica se a troca de senha com a senha atual incorreta é rejeitada;
-- Troca a senha do auditor e confere que o token antigo deixa de valer (tokenVersion) e que o login com a nova senha funciona;
+- Troca a senha do auditor e confere que o token antigo deixa de valer (`tokenVersion`) e que o login com a nova senha funciona;
 - Realiza o logout do gestor e confere que o token dele deixa de valer;
 - Remove definitivamente um usuário sem registros vinculados;
 - Inativa o operador e confere que ele não consegue mais fazer login e que o token dele deixa de valer;
@@ -328,7 +343,7 @@ Fluxo de uma requisição:
 Rota (valida com Zod + papel) → Controller → Service (regras) → Repository (Prisma) → PostgreSQL
 ```
 
-**Por que separar _services_ de _repositories_?** Assim como indicado na estrutura monolíticam, isso é feito para que **apenas uma camada se comunique com o banco**. Caso a ORM ou o próprio tipo de banco seja trocado, o arquivo de regras de negócio (service) não precisa ser refatorado: apenas os repositórios mudam.
+**Por que separar _services_ de _repositories_?** Assim como indicado na estrutura monolítica, isso é feito para que **apenas uma camada se comunique com o banco**. Caso a ORM ou o próprio tipo de banco seja trocado, o arquivo de regras de negócio (service) não precisa ser refatorado: apenas os repositórios mudam.
 
 **Por que separar _routes_ de _controllers_?** Para manter uma organização e um fluxo de leitura mais natural: a rota declara o contrato (caminho, schemas, papéis e documentação) e o controller cuida apenas de traduzir HTTP para chamadas de serviço, sem `try/catch` nem regras de negócio.
 
@@ -387,7 +402,7 @@ Operações que precisam ser "tudo ou nada":
 
 Para manter a rastreabilidade que o _journal_ fornecia na AV1, admitiu-se o uso de **`createdAt`, `createdBy`, `updatedAt` e `updatedBy`** nos modelos, além do histórico completo de movimentações dos equipamentos. Isso já proporciona uma camada a mais de rastreabilidade.
 
-**Alternativa rejeitada:** criar uma tabela nova de auditoria. Considerando o escopo do projeto, não vi a necessidade de criar um modelo a mais. Decisão tomada pois, na plataforma, o autidor (que mais se beneficiaria dessa estrutura) só tem acesso aos relatórios predeterminados na AV1 e nada mais.
+**Alternativa rejeitada:** criar uma tabela nova de auditoria. Considerando o escopo do projeto, não vi a necessidade de criar um modelo a mais. Decisão tomada pois, na plataforma, o auditor (que mais se beneficiaria dessa estrutura) só tem acesso aos relatórios predeterminados na AV1 e nada mais.
 
 ### 8. Tabela de configurações globais não é 1 para 1 com o usuário
 
@@ -466,6 +481,8 @@ Os status posteriores a `EM_DESMONTE` (`PECAS_REAPROVEITADAS`, `MATERIAL_RECICLA
 | `TRIAGEM_CONCLUIDA` | Nenhum equipamento em `AGUARDANDO_TRIAGEM` ou `EM_TRIAGEM`                        |
 | `ENCAMINHADO`       | Nenhum equipamento em `AGUARDANDO_TRIAGEM`, `EM_TRIAGEM` ou `AGUARDANDO_DESMONTE` |
 | `FINALIZADO`        | Todos em destino final (nenhum em triagem, aguardando desmonte ou em desmonte)    |
+
+Além disso, **um lote sem equipamentos não pode mudar de status**: é exigido pelo menos um equipamento para sair de `RECEBIDO`. Essa verificação é explícita porque `some` aplicado a uma lista vazia retorna `false` (nenhum violador) e, sem ela, um lote vazio poderia avançar até `FINALIZADO`.
 
 **Por que `some`?** As regras são escritas com `Array.some`: para que o status de um lote seja alterado, **todos** os equipamentos precisam respeitar a regra mínima, e `some` procura justamente por **ao menos um equipamento que a viole**. Como retorna `true` ou `false`, é perfeito para essa validação: se existir um violador, a mudança é bloqueada com uma mensagem explicando o motivo.
 
