@@ -19,6 +19,7 @@ import { prisma } from "./lib/prisma.js";
 import { ZodError } from "zod";
 import settingsRoute from "./routes/settings.routes.js";
 import reportRoutes from "./routes/report.routes.js";
+import easterEggRoutes from "./routes/easteregg.routes.js";
 
 export const server = Fastify({ logger: true });
 
@@ -136,6 +137,7 @@ async function main() {
   });
 
   server.register(authRoutes, { prefix: "/api/auth" });
+  server.register(easterEggRoutes, { prefix: "/api/easteregg" });
 
   server.register(async (authenticated) => {
     authenticated.addHook("onRequest", auth);
